@@ -9,6 +9,7 @@ import pytest
 from custom_components.jura.backends.base import JuraAuthError, JuraBackendError
 from custom_components.jura.coordinator import (
     HANDSHAKE_STATE_OFFLINE,
+    OFFLINE_TOLERANCE,
     JuraCoordinator,
     _is_offline_error,
 )
@@ -62,7 +63,8 @@ async def test_async_update_data_offline_after_successful_poll_returns_offline_s
 
     Coordinator must surface an OFFLINE snapshot every cycle the machine
     is unreachable, not just the first one. Previously this raised
-    UpdateFailed and flooded the log every 30s.
+    UpdateFailed and flooded the log every 30s. With single-session
+    debounce, OFFLINE surfaces after OFFLINE_TOLERANCE consecutive failures.
     """
     coordinator = _make_coordinator(mock_backend, fake_config_entry)
 
@@ -70,12 +72,16 @@ async def test_async_update_data_offline_after_successful_poll_returns_offline_s
     first = await coordinator._async_update_data()
     coordinator.data = first  # mirror what DataUpdateCoordinator does
 
-    # Second poll: backend raises the library's TimeoutError, wrapped
-    # exactly the way backends/jura.py wraps OSError.
+    # Subsequent polls: backend raises the library's TimeoutError, wrapped
+    # exactly the way backends/jura.py wraps OSError. It takes
+    # OFFLINE_TOLERANCE consecutive failures to flip to OFFLINE.
     mock_backend.fetch.side_effect = _wrap_backend_error(
         TimeoutError("no reply to '@HU?' within 6.0s"),
     )
-    snapshot = await coordinator._async_update_data()
+    snapshot = None
+    for _ in range(OFFLINE_TOLERANCE):
+        snapshot = await coordinator._async_update_data()
+        coordinator.data = snapshot
 
     assert snapshot.handshake_state == HANDSHAKE_STATE_OFFLINE
     # Last-known counters / brews / identity preserved so entities don't
@@ -86,25 +92,92 @@ async def test_async_update_data_offline_after_successful_poll_returns_offline_s
     assert snapshot.machine_type == sample_snapshot.machine_type
 
 
-async def test_async_update_data_offline_socket_timeout_returns_offline_snapshot(
-    mock_backend, fake_config_entry, sample_snapshot
-):
-    """Socket-level ``timed out`` (TimeoutError, no errno) also classifies as offline."""
+async def test_async_update_data_transient_blip_keeps_last_snapshot(mock_backend, fake_config_entry, sample_snapshot):
+    """A SINGLE failed poll (single-session race during a brew) must NOT flip
+    the machine OFFLINE — the last good snapshot is served so connectivity
+    doesn't flap."""
     coordinator = _make_coordinator(mock_backend, fake_config_entry)
     coordinator.data = sample_snapshot
+    mock_backend.fetch.side_effect = _wrap_backend_error(ConnectionRefusedError(111, "Connection refused"))
+
+    snapshot = await coordinator._async_update_data()
+
+    # Still the last good snapshot, NOT the OFFLINE sentinel.
+    assert snapshot is sample_snapshot
+    assert snapshot.handshake_state != HANDSHAKE_STATE_OFFLINE
+
+
+async def test_async_update_data_offline_recovers_and_resets_debounce(mock_backend, fake_config_entry, sample_snapshot):
+    """A successful poll after a blip resets the consecutive-failure counter,
+    so the next blip is again tolerated rather than immediately OFFLINE."""
+    coordinator = _make_coordinator(mock_backend, fake_config_entry)
+    coordinator.data = sample_snapshot
+    err = _wrap_backend_error(ConnectionRefusedError(111, "Connection refused"))
+
+    # Blip 1 -> tolerated.
+    mock_backend.fetch.side_effect = err
+    assert (await coordinator._async_update_data()) is sample_snapshot
+    # Recovery -> resets the counter.
+    mock_backend.fetch.side_effect = None
+    mock_backend.fetch.return_value = sample_snapshot
+    await coordinator._async_update_data()
+    assert coordinator._consecutive_offline == 0
+    # Blip 2 (isolated) -> tolerated again, not OFFLINE.
+    mock_backend.fetch.side_effect = err
+    snapshot = await coordinator._async_update_data()
+    assert snapshot.handshake_state != HANDSHAKE_STATE_OFFLINE
+
+
+async def test_async_update_data_offline_socket_timeout_classifies_offline(
+    mock_backend, fake_config_entry, sample_snapshot
+):
+    """Socket-level ``timed out`` (TimeoutError, no errno) classifies as offline
+    once the debounce threshold is crossed."""
+    coordinator = _make_coordinator(mock_backend, fake_config_entry)
+    coordinator.data = sample_snapshot
+    coordinator._consecutive_offline = OFFLINE_TOLERANCE - 1  # next failure flips
     mock_backend.fetch.side_effect = _wrap_backend_error(TimeoutError("timed out"))
     snapshot = await coordinator._async_update_data()
     assert snapshot.handshake_state == HANDSHAKE_STATE_OFFLINE
 
 
-async def test_async_update_data_offline_connection_refused_returns_offline_snapshot(
+async def test_async_update_data_offline_connection_refused_classifies_offline(
     mock_backend, fake_config_entry, sample_snapshot
 ):
     coordinator = _make_coordinator(mock_backend, fake_config_entry)
     coordinator.data = sample_snapshot
+    coordinator._consecutive_offline = OFFLINE_TOLERANCE - 1  # next failure flips
     mock_backend.fetch.side_effect = _wrap_backend_error(ConnectionRefusedError(111, "Connection refused"))
     snapshot = await coordinator._async_update_data()
     assert snapshot.handshake_state == HANDSHAKE_STATE_OFFLINE
+
+
+async def test_session_lock_held_during_fetch_and_commands(mock_backend, fake_config_entry, sample_snapshot):
+    """The dongle serves one TCP session at a time: both the poll and named
+    commands must run while holding the shared session lock so they can never
+    open two sockets at once."""
+    coordinator = _make_coordinator(mock_backend, fake_config_entry)
+    coordinator.async_request_refresh = AsyncMock()
+    held: dict[str, bool] = {}
+
+    async def _fetch(*_a, **_k):
+        held["fetch"] = coordinator._session_lock.locked()
+        return sample_snapshot
+
+    async def _run(*_a, **_k):
+        held["command"] = coordinator._session_lock.locked()
+        return {"ok": 1}
+
+    mock_backend.fetch.side_effect = _fetch
+    mock_backend.run_named.side_effect = _run
+
+    await coordinator._async_update_data()
+    await coordinator.run_command("status", (), allow_destructive=False)
+
+    assert held["fetch"] is True
+    assert held["command"] is True
+    # Lock is released again once the calls return.
+    assert coordinator._session_lock.locked() is False
 
 
 async def test_async_update_data_offline_on_first_poll_returns_minimal_snapshot(mock_backend, fake_config_entry):

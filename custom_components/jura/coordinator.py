@@ -44,6 +44,14 @@ BREW_PREFS_SAVE_DELAY = 1.0
 # (ConnectivityBinarySensor) key off this value.
 HANDSHAKE_STATE_OFFLINE = "OFFLINE"
 
+# The Jura dongle serves only ONE TCP session at a time. A poll that races
+# a brew/command session — or hits the machine while it is busy dispensing —
+# gets a transient connection refusal. Tolerate this many consecutive failed
+# polls before surfacing OFFLINE: below the threshold we keep serving the last
+# good snapshot (connectivity stays on), so a single blip during brewing does
+# not flap the connectivity sensor. A real outage still flips after N polls.
+OFFLINE_TOLERANCE = 2
+
 # errno values that mean "the machine isn't answering" — connection
 # refused, host/network unreachable, timeouts. Anything else (EACCES,
 # EBADF, …) is a programming error and should still surface as
@@ -158,6 +166,14 @@ class JuraCoordinator(DataUpdateCoordinator[MachineSnapshot]):
         # written back (debounced) by ``save_brew_prefs``.
         self.brew_prefs: dict[str, dict[str, int | None]] = {}
         self._brew_prefs_store: Store | None = None
+        # Serialise all machine I/O (polls + commands + setting writes) so the
+        # coordinator never opens a second TCP session while one is in flight —
+        # the dongle only serves one at a time. Held only for the duration of a
+        # single backend call (a brew @TP: returns as soon as the machine
+        # accepts it; the physical dispense continues after the session closes).
+        self._session_lock = asyncio.Lock()
+        # Consecutive offline-classified poll failures; see OFFLINE_TOLERANCE.
+        self._consecutive_offline = 0
 
     @staticmethod
     def _load_brew_profile(config_entry: ConfigEntry) -> MachineProfile | None:
@@ -276,16 +292,43 @@ class JuraCoordinator(DataUpdateCoordinator[MachineSnapshot]):
 
     async def _async_update_data(self) -> MachineSnapshot:
         try:
-            return await self.backend.fetch()
+            async with self._session_lock:
+                snapshot = await self.backend.fetch()
         except JuraAuthError as err:
             raise ConfigEntryAuthFailed(f"authentication failed: {err}") from err
         except JuraBackendError as err:
             if _is_offline_error(err):
-                _LOGGER.debug("machine unreachable, surfacing OFFLINE snapshot: %s", err)
-                return self._offline_snapshot()
+                return self._handle_offline_poll(err)
             raise UpdateFailed(f"backend error: {err}") from err
         except Exception as err:  # noqa: BLE001
             raise UpdateFailed(f"unexpected error: {err}") from err
+        self._consecutive_offline = 0
+        return snapshot
+
+    def _handle_offline_poll(self, err: BaseException) -> MachineSnapshot:
+        """Classify an offline poll: tolerate a transient blip, else go OFFLINE.
+
+        The dongle serves one TCP session at a time, so a poll that races a
+        brew/command session (or hits the machine mid-dispense) fails even
+        though the machine is reachable. Below OFFLINE_TOLERANCE we keep serving
+        the last good snapshot so connectivity does not flap; only a sustained
+        failure (or no prior data) surfaces the OFFLINE snapshot.
+        """
+        self._consecutive_offline += 1
+        if self._consecutive_offline < OFFLINE_TOLERANCE and self.data is not None:
+            _LOGGER.debug(
+                "transient machine blip (%d/%d), keeping last snapshot: %s",
+                self._consecutive_offline,
+                OFFLINE_TOLERANCE,
+                err,
+            )
+            return self.data
+        _LOGGER.debug(
+            "machine unreachable (%d consecutive), surfacing OFFLINE snapshot: %s",
+            self._consecutive_offline,
+            err,
+        )
+        return self._offline_snapshot()
 
     async def run_command(
         self,
@@ -296,11 +339,12 @@ class JuraCoordinator(DataUpdateCoordinator[MachineSnapshot]):
     ) -> dict[str, Any]:
         """Dispatch a named command, then refresh state so HA reflects the change."""
         try:
-            result = await self.backend.run_named(
-                name,
-                args,
-                allow_destructive=allow_destructive,
-            )
+            async with self._session_lock:
+                result = await self.backend.run_named(
+                    name,
+                    args,
+                    allow_destructive=allow_destructive,
+                )
         except JuraAuthError as err:
             raise ConfigEntryAuthFailed(f"authentication failed: {err}") from err
         except JuraBackendError as err:
@@ -321,7 +365,8 @@ class JuraCoordinator(DataUpdateCoordinator[MachineSnapshot]):
         shot.
         """
         try:
-            new_hex = await self.backend.write_setting(name, value)
+            async with self._session_lock:
+                new_hex = await self.backend.write_setting(name, value)
         except JuraAuthError as err:
             raise ConfigEntryAuthFailed(f"authentication failed: {err}") from err
         except JuraBackendError as err:
