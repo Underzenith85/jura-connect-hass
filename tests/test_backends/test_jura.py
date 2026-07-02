@@ -50,11 +50,11 @@ async def test_fetch_round_trip(running_simulator):
     # Simulator's DEFAULT_MAINT_COUNTERS = "001500010008015 8 0E21 005B"
     assert snapshot.counters["cleaning"] == 0x0015
     assert snapshot.counters["filter_change"] == 0x0001
-    assert snapshot.counters["decalc"] == 0x0008
-    # MAINT_PERCENT = "50FF1E" -> cleaning=80, filter=255, decalc=30
+    assert snapshot.counters["descale"] == 0x0008
+    # MAINT_PERCENT = "50FF1E" -> cleaning=80, filter=255, descale=30
     assert snapshot.percents["cleaning"] == 0x50
     assert snapshot.percents["filter_change"] == 0xFF
-    assert snapshot.percents["decalc"] == 0x1E
+    assert snapshot.percents["descale"] == 0x1E
 
 
 async def test_fetch_includes_brews_and_machine_type(running_simulator):

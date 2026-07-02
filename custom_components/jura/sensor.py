@@ -102,7 +102,7 @@ class StateSensor(JuraEntity, SensorEntity):
 
 
 class CounterSensor(JuraEntity, SensorEntity):
-    """One maintenance counter (cleaning / decalc / filter / cappu / coffee rinse).
+    """One maintenance counter (cleaning / descale / filter / cappu / coffee rinse).
 
     Counters are diagnostic — they're useful for spotting "the machine has
     been cleaned 21 times" but not the day-to-day state most automations

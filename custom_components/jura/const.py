@@ -50,7 +50,7 @@ STATE_PRIORITY: tuple[str, ...] = (
     "program_mode_status",
     # maintenance reminders (process severity)
     "filter_alert",
-    "decalc_alert",
+    "descale_alert",
     "cleaning_alert",
     "cappu_rinse_alert",
     # in-progress
@@ -103,7 +103,7 @@ ALERT_BINARY_SENSORS: dict[str, str | None] = {
     # maintenance reminders (process severity in the library) — also problems
     # from the user's POV because they prompt action
     "filter_alert": "problem",
-    "decalc_alert": "problem",
+    "descale_alert": "problem",
     "cleaning_alert": "problem",
     "cappu_rinse_alert": "problem",
     # in-progress / running
@@ -138,7 +138,7 @@ DIAGNOSTIC_ALERT_DEVICE_CLASSES: frozenset[str | None] = frozenset({"running", N
 COUNTER_KEYS: tuple[str, ...] = (
     "cleaning",
     "filter_change",
-    "decalc",
+    "descale",
     "cappu_rinse",
     "coffee_rinse",
     "cappu_clean",
@@ -147,7 +147,7 @@ COUNTER_KEYS: tuple[str, ...] = (
 PERCENT_KEYS: tuple[str, ...] = (
     "cleaning",
     "filter_change",
-    "decalc",
+    "descale",
 )
 
 # 0xFF is the library's sentinel for "this percent indicator is absent / unknown".

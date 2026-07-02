@@ -65,6 +65,11 @@ hardware test without a real machine.
 
 When fixing a bug, start with a failing regression test.
 
+### Real hardware
+
+The maintainer uses a **JURA S8 EB** (`EF1091`); unless stated otherwise,
+assume this machine type is available and used for hardware testing.
+
 ### NixOS VM Test
 
 ```sh
@@ -162,7 +167,7 @@ Non-Python files in the package (`manifest.json`, `services.yaml`,
   firmwares (notably TT237W). The flow falls back to a TCP /24 sweep and
   ultimately to manual IP entry.
 - **Named services pass `allow_destructive=True`** for destructive ops
-  (clean, decalc, brew, …). The user opting into a documented service is
+  (clean, descale, brew, …). The user opting into a documented service is
   the explicit gate that the library would otherwise require via flag.
   Genuinely dangerous registry entries (`reset-counters`, `set-pin`,
   `set-ssid`, `set-password`, `raw`) are *not* exposed as HA services in

@@ -19,7 +19,7 @@
             "counter_filter_change": {
                 "name": "Filterwechselzyklen"
             },
-            "counter_decalc": {
+            "counter_descale": {
                 "name": "Entkalkungszyklen"
             },
             "counter_cappu_rinse": {
@@ -37,7 +37,7 @@
             "percent_filter_change": {
                 "name": "Filterstand"
             },
-            "percent_decalc": {
+            "percent_descale": {
                 "name": "Entkalkungsstand"
             }
         },
@@ -99,7 +99,7 @@
             "filter_alert": {
                 "name": "Filterwarnung"
             },
-            "decalc_alert": {
+            "descale_alert": {
                 "name": "Entkalkungswarnung"
             },
             "cleaning_alert": {

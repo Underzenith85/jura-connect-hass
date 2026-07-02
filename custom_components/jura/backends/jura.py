@@ -170,7 +170,7 @@ class JuraConnectBackend(JuraBackend):
                 counters={
                     "cleaning": info.maintenance_counters.cleaning,
                     "filter_change": info.maintenance_counters.filter_change,
-                    "decalc": info.maintenance_counters.decalc,
+                    "descale": info.maintenance_counters.descale,
                     "cappu_rinse": info.maintenance_counters.cappu_rinse,
                     "coffee_rinse": info.maintenance_counters.coffee_rinse,
                     "cappu_clean": info.maintenance_counters.cappu_clean,
@@ -178,7 +178,7 @@ class JuraConnectBackend(JuraBackend):
                 percents={
                     "cleaning": info.maintenance_percent.cleaning,
                     "filter_change": info.maintenance_percent.filter_change,
-                    "decalc": info.maintenance_percent.decalc,
+                    "descale": info.maintenance_percent.descale,
                 },
                 raw_status_hex=info.status.raw.hex().upper(),
                 brews=brews,
