@@ -109,9 +109,9 @@ def test_counter_sensor_is_diagnostic_with_per_key_translation(sample_snapshot, 
 
 
 def test_percent_sensor_is_default_category_with_per_key_translation(sample_snapshot, fake_config_entry):
-    s = PercentSensor(_make_coordinator(sample_snapshot), fake_config_entry, "decalc")
+    s = PercentSensor(_make_coordinator(sample_snapshot), fake_config_entry, "descale")
     assert s.entity_category is None
-    assert s._attr_translation_key == "percent_decalc"
+    assert s._attr_translation_key == "percent_descale"
 
 
 def test_brew_counter_uses_placeholder_for_product(sample_snapshot, fake_config_entry):

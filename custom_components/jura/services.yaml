@@ -44,7 +44,10 @@ unlock_screen:
 
 brew:
   name: Brew
-  description: Start brewing a product. Recipe codes are firmware-specific (e.g. 01 = espresso on many models).
+  description: >-
+    Brew a drink. Pick a product by name (optionally overriding
+    strength/water/temperature), or pass a raw recipe payload. This
+    PHYSICALLY brews a drink on the machine.
   fields:
     config_entry_id:
       name: Config Entry ID
@@ -55,10 +58,52 @@ brew:
       selector:
         entity:
           integration: jura
+    product:
+      name: Product
+      description: >-
+        Product name from the machine's product table (e.g. "espresso").
+        See the "Brew Product" select for the valid names on your model.
+        Mutually exclusive with recipe.
+      example: espresso
+      selector:
+        text:
+    strength:
+      name: Coffee strength
+      description: >-
+        Optional strength level (model-specific, e.g. 1-10). Omit for the
+        product's factory default. Clamped to the product's valid range.
+      selector:
+        number:
+          min: 1
+          max: 16
+          mode: box
+    water_ml:
+      name: Water
+      description: >-
+        Optional water amount in millilitres. Omit for the product's factory
+        default. Clamped to the product's valid range.
+      selector:
+        number:
+          min: 0
+          max: 1000
+          unit_of_measurement: mL
+          mode: box
+    temperature:
+      name: Temperature
+      description: >-
+        Optional temperature level (model-specific, e.g. 1 = Normal, 2 = High).
+        Omit for the product's factory default. Clamped to the product's valid set.
+      selector:
+        number:
+          min: 0
+          max: 3
+          mode: box
     recipe:
-      name: Recipe
-      description: Product code, e.g. "01" for espresso. Consult your machine's documentation.
-      required: true
+      name: Recipe (advanced)
+      description: >-
+        Raw hex payload without the @TP: prefix (legacy/advanced).
+        Mutually exclusive with product.
+      example: "02FF0809FFFF02FFFFFFFFFFFFFFFFFF"
       selector:
         text:
 
@@ -76,7 +121,7 @@ clean:
         entity:
           integration: jura
 
-decalc:
+descale:
   name: Start Descaling Cycle
   description: Start the descaling cycle (30+ min, requires descaler in tank).
   fields:

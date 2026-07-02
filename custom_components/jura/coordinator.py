@@ -12,10 +12,13 @@ from typing import Any
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from jura_connect import MachineProfile, ProductDef, load_profile
 
 from .backends.base import JuraAuthError, JuraBackend, JuraBackendError, MachineSnapshot
 from .backends.jura import JuraConnectBackend
+from .brew import remember_param, selection_for_product
 from .const import (
     CONF_AUTH_HASH,
     CONF_CONN_ID,
@@ -29,6 +32,12 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+# Persisted brew-preferences store. Bump the version only on an incompatible
+# on-disk schema change. Saves are debounced by this many seconds so a flurry
+# of select changes collapses into a single write.
+BREW_PREFS_STORAGE_VERSION = 1
+BREW_PREFS_SAVE_DELAY = 1.0
 
 # Sentinel surfaced in MachineSnapshot.handshake_state when the machine
 # is powered off / unreachable. Entities that care about reachability
@@ -119,6 +128,110 @@ class JuraCoordinator(DataUpdateCoordinator[MachineSnapshot]):
         # by assigning eagerly when provided.
         if backend is not None:
             self.backend = backend
+        # The machine's brewable-product table, resolved once from the
+        # jura_connect library (``load_profile`` — a cached file read, mirroring
+        # select.py/number.py), so the brew control-panel entities and the brew
+        # button can enumerate products + parameter ranges without re-parsing.
+        self.brew_profile: MachineProfile | None = self._load_brew_profile(config_entry)
+        # The single staged "next brew" selection shared by the whole machine.
+        # ``product`` is a product Code as a 2-hex-uppercase string (JSON-safe;
+        # ``ProductDef.code`` is an int, so convert on lookup). ``None`` for a
+        # parameter means "Factory Default" — the recipe builder falls back to
+        # that product's XML default. It does NOT mean "use whatever the machine
+        # currently has stored": JURA WiFi exposes no such mechanism. The brew
+        # control-panel selects write here; the brew button reads from here.
+        # Purely local — nothing is sent to the machine until the user presses
+        # the button or calls the brew service.
+        self.brew_selection: dict[str, int | str | None] = {
+            "product": None,
+            "strength": None,
+            "water_ml": None,
+            "temp": None,
+        }
+        if self.brew_profile is not None and self.brew_profile.products:
+            self.brew_selection["product"] = f"{self.brew_profile.products[0].code:02X}"
+        # Persistent per-product brew preferences: product Code (2-hex string) ->
+        # {"strength"|"water_ml"|"temp": int | None}, where ``None`` == Factory
+        # Default. Loaded from disk by ``async_load_brew_prefs`` at setup and
+        # written back (debounced) by ``save_brew_prefs``.
+        self.brew_prefs: dict[str, dict[str, int | None]] = {}
+        self._brew_prefs_store: Store | None = None
+
+    @staticmethod
+    def _load_brew_profile(config_entry: ConfigEntry) -> MachineProfile | None:
+        """Resolve the machine's product profile from the library, or ``None``.
+
+        An unknown / unset machine type is a configuration condition, not a
+        hard error: the brew control panel simply isn't created (mirrors the
+        select / number platforms).
+        """
+        machine_type = config_entry.data.get(CONF_MACHINE_TYPE)
+        if not machine_type:
+            return None
+        try:
+            return load_profile(machine_type)
+        except KeyError:
+            _LOGGER.warning("no profile for machine_type %s; brew panel disabled", machine_type)
+            return None
+
+    def selected_product(self) -> ProductDef | None:
+        """Return the currently-staged :class:`ProductDef`, or ``None``."""
+        if self.brew_profile is None:
+            return None
+        code = self.brew_selection.get("product")
+        if code is None:
+            return None
+        return self.brew_profile.product_by_code.get(int(str(code), 16))
+
+    # --- persistent per-product brew preferences -------------------------
+    def _brew_prefs_storage_key(self) -> str:
+        return f"{DOMAIN}.brew_prefs.{self.config_entry.entry_id}"
+
+    async def async_load_brew_prefs(self) -> None:
+        """Wire the Store and load persisted brew prefs into ``brew_prefs``.
+
+        Called once at config-entry setup. After loading, the staged selection
+        is re-hydrated from the currently-selected (first) product's prefs so a
+        fresh Home Assistant start shows remembered values rather than blanks.
+        """
+        self._brew_prefs_store = Store(self.hass, BREW_PREFS_STORAGE_VERSION, self._brew_prefs_storage_key())
+        data = await self._brew_prefs_store.async_load()
+        self.brew_prefs = data or {}
+        code = self.brew_selection.get("product")
+        if code is not None:
+            self.brew_selection.update(selection_for_product(self.brew_prefs, str(code)))
+
+    async def save_brew_prefs(self) -> None:
+        """Schedule a debounced write of ``brew_prefs`` to disk.
+
+        No-op until ``async_load_brew_prefs`` has wired the Store. The data
+        callback returns the live dict so the most recent edits are captured
+        when the delayed save fires.
+        """
+        if self._brew_prefs_store is None:
+            return
+        self._brew_prefs_store.async_delay_save(lambda: self.brew_prefs, BREW_PREFS_SAVE_DELAY)
+
+    def select_brew_product(self, code: str) -> None:
+        """Make ``code`` the staged product, hydrating its saved prefs.
+
+        Each parameter is loaded from the product's saved prefs (missing ->
+        ``None`` == Factory Default), replacing whatever was staged for the
+        previous product.
+        """
+        self.brew_selection.update(selection_for_product(self.brew_prefs, code))
+
+    def set_brew_param(self, param: str, value: int | None) -> None:
+        """Stage ``value`` for ``param`` and remember it for the current product.
+
+        ``value`` is ``None`` for Factory Default, else the chosen value. Both
+        the live selection and the persisted prefs for the current product are
+        updated; callers schedule the disk write via :meth:`save_brew_prefs`.
+        """
+        self.brew_selection[param] = value
+        code = self.brew_selection.get("product")
+        if code is not None:
+            remember_param(self.brew_prefs, str(code), param, value)
 
     async def _async_setup(self) -> None:
         if hasattr(self, "backend"):

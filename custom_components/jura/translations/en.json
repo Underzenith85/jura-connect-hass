@@ -78,8 +78,8 @@
             "counter_filter_change": {
                 "name": "Filter change cycles"
             },
-            "counter_decalc": {
-                "name": "Decalcification cycles"
+            "counter_descale": {
+                "name": "Descaling cycles"
             },
             "counter_cappu_rinse": {
                 "name": "Cappuccino rinse cycles"
@@ -96,8 +96,8 @@
             "percent_filter_change": {
                 "name": "Filter level"
             },
-            "percent_decalc": {
-                "name": "Decalcification level"
+            "percent_descale": {
+                "name": "Descaling level"
             }
         },
         "binary_sensor": {
@@ -158,8 +158,8 @@
             "filter_alert": {
                 "name": "Filter alert"
             },
-            "decalc_alert": {
-                "name": "Decalc alert"
+            "descale_alert": {
+                "name": "Descale alert"
             },
             "cleaning_alert": {
                 "name": "Cleaning alert"

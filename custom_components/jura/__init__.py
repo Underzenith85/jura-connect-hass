@@ -12,8 +12,15 @@ try:
     from homeassistant.const import Platform
     from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse, SupportsResponse
     from homeassistant.helpers import entity_registry as er
+    from jura_connect import (
+        KIND_COFFEE_STRENGTH,
+        KIND_TEMPERATURE,
+        KIND_WATER_AMOUNT,
+        ProductDef,
+        load_profile,
+    )
 
-    from .const import DOMAIN
+    from .const import CONF_MACHINE_TYPE, DOMAIN
     from .coordinator import JuraCoordinator
 
     _HAS_HOMEASSISTANT = True
@@ -22,14 +29,20 @@ except ImportError:
 
 
 if _HAS_HOMEASSISTANT:
-    PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.SELECT, Platform.NUMBER]
+    PLATFORMS = [
+        Platform.SENSOR,
+        Platform.BINARY_SENSOR,
+        Platform.SELECT,
+        Platform.NUMBER,
+        Platform.BUTTON,
+    ]
 
     SERVICE_FORCE_UPDATE = "force_update"
     SERVICE_LOCK_SCREEN = "lock_screen"
     SERVICE_UNLOCK_SCREEN = "unlock_screen"
     SERVICE_BREW = "brew"
     SERVICE_CLEAN = "clean"
-    SERVICE_DECALC = "decalc"
+    SERVICE_DESCALE = "descale"
     SERVICE_FILTER_CHANGE = "filter_change"
     SERVICE_CAPPU_RINSE = "cappu_rinse"
     SERVICE_CAPPU_CLEAN = "cappu_clean"
@@ -43,12 +56,19 @@ if _HAS_HOMEASSISTANT:
         SERVICE_LOCK_SCREEN: "lock",
         SERVICE_UNLOCK_SCREEN: "unlock",
         SERVICE_CLEAN: "clean",
-        SERVICE_DECALC: "decalc",
+        SERVICE_DESCALE: "descale",
         SERVICE_FILTER_CHANGE: "filter-change",
         SERVICE_CAPPU_RINSE: "cappu-rinse",
         SERVICE_CAPPU_CLEAN: "cappu-clean",
         SERVICE_POWER_OFF: "power-off",
         SERVICE_RESTART: "restart",
+    }
+
+    # brew_service call-data axis -> library recipe-param kind.
+    _BREW_SERVICE_KINDS: dict[str, str] = {
+        "strength": KIND_COFFEE_STRENGTH,
+        "water_ml": KIND_WATER_AMOUNT,
+        "temperature": KIND_TEMPERATURE,
     }
 
     _BASE_TARGET_SCHEMA = vol.Schema(
@@ -58,7 +78,44 @@ if _HAS_HOMEASSISTANT:
         }
     )
 
-    BREW_SCHEMA = _BASE_TARGET_SCHEMA.extend({vol.Required("recipe"): str})
+    # ``brew`` accepts either a friendly ``product`` (name or Code from the
+    # machine's product table; strength/water_ml/temperature override the XML
+    # defaults) or a raw ``recipe`` (the bare hex payload, legacy path).
+    # Exactly one of ``product`` / ``recipe`` is required — enforced in the
+    # handler.
+    BREW_SCHEMA = _BASE_TARGET_SCHEMA.extend(
+        {
+            vol.Optional("recipe"): str,
+            vol.Optional("product"): str,
+            vol.Optional("strength"): vol.Coerce(int),
+            vol.Optional("water_ml"): vol.Coerce(int),
+            vol.Optional("temperature"): vol.Coerce(int),
+        }
+    )
+
+
+def _find_product(machine_type: str | None, name: str) -> ProductDef | None:
+    """Resolve a product *name* (or 2-hex Code) to its :class:`ProductDef`.
+
+    Products come from the ``jura_connect`` library's bundled profile for
+    ``machine_type`` (matched case-insensitively by name, or by hex Code).
+    Returns ``None`` when the machine type or product is unknown.
+    """
+    if not machine_type:
+        return None
+    try:
+        profile = load_profile(machine_type)
+    except KeyError:
+        return None
+    for product in profile.products:
+        if product.name.casefold() == name.casefold():
+            return product
+    # Fall back to a hex Code match (e.g. "30" or "0x30").
+    try:
+        code = int(name, 16)
+    except ValueError:
+        return None
+    return profile.product_by_code.get(code)
 
 
 def _resolve_config_entry_id(hass: HomeAssistant, call_data: dict) -> str:
@@ -89,6 +146,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Jura from a config entry."""
     coordinator = JuraCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
+    # Restore persisted per-product brew preferences (strength/water/temp),
+    # keyed by product Code, so the brew panel remembers them across restarts.
+    await coordinator.async_load_brew_prefs()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 
@@ -120,7 +180,23 @@ def _register_services(hass: HomeAssistant) -> None:
     async def handle_brew(call: ServiceCall) -> ServiceResponse:
         config_entry_id = _resolve_config_entry_id(hass, call.data)
         coordinator = _get_coordinator(hass, config_entry_id)
-        recipe = call.data["recipe"]
+        product_name = call.data.get("product")
+        recipe = call.data.get("recipe")
+        if product_name and recipe:
+            raise vol.Invalid("Provide either product or recipe, not both")
+        if product_name:
+            machine_type = coordinator.config_entry.data.get(CONF_MACHINE_TYPE)
+            product = _find_product(machine_type, product_name)
+            if product is None:
+                raise ValueError(f"Unknown product {product_name!r} for machine {machine_type!r}")
+            overrides: dict[str, int | str] = {}
+            for axis, kind in _BREW_SERVICE_KINDS.items():
+                value = call.data.get(axis)
+                if value is not None:
+                    overrides[kind] = value
+            recipe = product.build_recipe_hex(overrides)
+        elif not recipe:
+            raise vol.Invalid("Provide either product or recipe")
         return await coordinator.run_command("brew", [recipe], allow_destructive=True)
 
     hass.services.async_register(

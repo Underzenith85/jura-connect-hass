@@ -33,6 +33,7 @@ class Platform:
     BINARY_SENSOR = "binary_sensor"
     SELECT = "select"
     NUMBER = "number"
+    BUTTON = "button"
 
 
 class EntityCategory(str, Enum):
@@ -281,6 +282,11 @@ class DataUpdateCoordinator:
         self.last_update_success = True
         self._notify_listeners()
 
+    def async_update_listeners(self):
+        # Real HA pushes a state update to every registered CoordinatorEntity;
+        # entities in tests read coordinator state live, so this is a no-op.
+        pass
+
     async def _async_update_data(self):
         raise NotImplementedError
 
@@ -292,6 +298,11 @@ class CoordinatorEntity:
     def __init__(self, coordinator):
         self.coordinator = coordinator
 
+    def async_write_ha_state(self):
+        # Real HA pushes the new state to the state machine; the test stub
+        # only needs the method to exist so entities can call it.
+        pass
+
 
 _make_module(
     "homeassistant.helpers.update_coordinator",
@@ -299,6 +310,52 @@ _make_module(
     UpdateFailed=UpdateFailed,
     CoordinatorEntity=CoordinatorEntity,
 )
+
+
+# --- homeassistant.helpers.storage ---
+class Store:
+    """Minimal persistent Store stub.
+
+    Mimics enough of ``homeassistant.helpers.storage.Store`` for the brew-prefs
+    persistence path: a process-wide, key-addressed backing dict stands in for
+    on-disk JSON. ``async_delay_save`` resolves and stores the data immediately
+    (the real one debounces) so load/save round-trips are deterministic in
+    tests. Values are deep-copied in/out to mimic JSON (de)serialisation, so the
+    in-memory caller dict and the "stored" copy never alias.
+    """
+
+    _backing: dict[str, object] = {}
+
+    def __init__(self, hass, version, key, **kwargs):
+        self.hass = hass
+        self.version = version
+        self.key = key
+
+    async def async_load(self):
+        import copy
+
+        return copy.deepcopy(Store._backing.get(self.key))
+
+    def async_delay_save(self, data_func, delay=0):
+        import copy
+
+        Store._backing[self.key] = copy.deepcopy(data_func())
+
+    async def async_save(self, data):
+        import copy
+
+        Store._backing[self.key] = copy.deepcopy(data)
+
+
+_make_module("homeassistant.helpers.storage", Store=Store)
+
+
+@pytest.fixture(autouse=True)
+def _clear_store_backing():
+    """Isolate persistence tests: wipe the Store's backing between tests."""
+    Store._backing.clear()
+    yield
+    Store._backing.clear()
 
 
 # --- homeassistant.components.sensor ---
@@ -395,6 +452,24 @@ class NumberEntity:
 _make_module("homeassistant.components.number", NumberEntity=NumberEntity)
 
 
+# --- homeassistant.components.button ---
+class ButtonEntity:
+    @property
+    def unique_id(self):
+        return getattr(self, "_attr_unique_id", None)
+
+    @property
+    def name(self):
+        return getattr(self, "_attr_name", None)
+
+    @property
+    def entity_category(self):
+        return getattr(self, "_attr_entity_category", None)
+
+
+_make_module("homeassistant.components.button", ButtonEntity=ButtonEntity)
+
+
 # --- homeassistant.components.binary_sensor ---
 class BinarySensorEntity:
     @property
@@ -456,7 +531,7 @@ def sample_snapshot() -> MachineSnapshot:
         counters={
             "cleaning": 21,
             "filter_change": 1,
-            "decalc": 8,
+            "descale": 8,
             "cappu_rinse": 344,
             "coffee_rinse": 3617,
             "cappu_clean": 91,
@@ -464,7 +539,7 @@ def sample_snapshot() -> MachineSnapshot:
         percents={
             "cleaning": 80,
             "filter_change": 255,
-            "decalc": 30,
+            "descale": 30,
         },
         raw_status_hex="0010000000000000",
         brews={
@@ -494,10 +569,10 @@ def empty_snapshot() -> MachineSnapshot:
         handshake_state="CORRECT",
         active_alerts=(),
         counters=dict.fromkeys(
-            ("cleaning", "filter_change", "decalc", "cappu_rinse", "coffee_rinse", "cappu_clean"),
+            ("cleaning", "filter_change", "descale", "cappu_rinse", "coffee_rinse", "cappu_clean"),
             0,
         ),
-        percents={"cleaning": 100, "filter_change": 100, "decalc": 100},
+        percents={"cleaning": 100, "filter_change": 100, "descale": 100},
         raw_status_hex="0000000000000000",
         brews={},
         brews_total=0,
