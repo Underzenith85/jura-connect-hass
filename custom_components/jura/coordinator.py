@@ -129,9 +129,11 @@ class JuraCoordinator(DataUpdateCoordinator[MachineSnapshot]):
         if backend is not None:
             self.backend = backend
         # The machine's brewable-product table, resolved once from the
-        # jura_connect library (``load_profile`` — a cached file read, mirroring
-        # select.py/number.py), so the brew control-panel entities and the brew
+        # jura_connect library so the brew control-panel entities and the brew
         # button can enumerate products + parameter ranges without re-parsing.
+        # ``async_setup_entry`` primes load_profile's cache in an executor
+        # first, so this @lru_cache'd call is a pure cache hit — no blocking
+        # disk I/O in the event loop. (Tests warm the cache at import.)
         self.brew_profile: MachineProfile | None = self._load_brew_profile(config_entry)
         # The single staged "next brew" selection shared by the whole machine.
         # ``product`` is a product Code as a 2-hex-uppercase string (JSON-safe;

@@ -144,6 +144,17 @@ def _get_coordinator(hass: HomeAssistant, config_entry_id: str) -> JuraCoordinat
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Jura from a config entry."""
+    # Warm the jura_connect profile cache off the event loop. load_profile
+    # reads the per-machine XML from disk and is @lru_cache'd; priming it in an
+    # executor here means the coordinator's __init__ and the select/number/
+    # button platforms all hit the cache instead of doing blocking disk I/O in
+    # the event loop.
+    machine_type = entry.data.get(CONF_MACHINE_TYPE)
+    if machine_type:
+        try:
+            await hass.async_add_executor_job(load_profile, machine_type)
+        except KeyError:
+            pass  # unknown type -> coordinator disables the brew panel
     coordinator = JuraCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
     # Restore persisted per-product brew preferences (strength/water/temp),

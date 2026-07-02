@@ -143,3 +143,82 @@ async def test_command_services_dispatch_with_destructive_allowed():
     # Every call must have allow_destructive=True
     for call_args in coordinator.run_command.await_args_list:
         assert call_args.kwargs["allow_destructive"] is True
+
+
+async def test_async_setup_entry_prewarms_profile_off_event_loop(monkeypatch):
+    """Regression: load_profile (blocking XML read) must be primed via the
+    executor, not called inline in the event loop, so the coordinator's cached
+    read in __init__ never blocks. HA flags an in-loop disk read otherwise."""
+    import custom_components.jura as jura
+    from custom_components.jura.const import CONF_MACHINE_TYPE
+
+    executor_calls: list = []
+
+    async def fake_executor(func, *args):
+        executor_calls.append((func, args))
+        return func(*args)
+
+    hass = MagicMock()
+    hass.data = {}
+    hass.async_add_executor_job = fake_executor
+    hass.config_entries.async_forward_entry_setups = AsyncMock()
+
+    coordinator = MagicMock()
+    coordinator.async_config_entry_first_refresh = AsyncMock()
+    coordinator.async_load_brew_prefs = AsyncMock()
+    monkeypatch.setattr(jura, "JuraCoordinator", lambda *a, **k: coordinator)
+    monkeypatch.setattr(jura, "_register_services", lambda _hass: None)
+
+    seen: dict = {}
+
+    def fake_load_profile(machine_type):
+        seen["machine_type"] = machine_type
+        return object()
+
+    monkeypatch.setattr(jura, "load_profile", fake_load_profile)
+
+    entry = MagicMock()
+    entry.entry_id = "e1"
+    entry.data = {CONF_MACHINE_TYPE: "EF1091"}
+
+    assert await jura.async_setup_entry(hass, entry) is True
+    # load_profile was invoked through the executor with the machine type.
+    assert any(func is fake_load_profile for func, _ in executor_calls)
+    assert seen["machine_type"] == "EF1091"
+
+
+async def test_async_setup_entry_skips_prewarm_without_machine_type(monkeypatch):
+    """No machine type -> no profile read at all (brew panel just stays off)."""
+    import custom_components.jura as jura
+
+    executor_calls: list = []
+
+    async def fake_executor(func, *args):
+        executor_calls.append((func, args))
+        return func(*args)
+
+    hass = MagicMock()
+    hass.data = {}
+    hass.async_add_executor_job = fake_executor
+    hass.config_entries.async_forward_entry_setups = AsyncMock()
+
+    coordinator = MagicMock()
+    coordinator.async_config_entry_first_refresh = AsyncMock()
+    coordinator.async_load_brew_prefs = AsyncMock()
+    monkeypatch.setattr(jura, "JuraCoordinator", lambda *a, **k: coordinator)
+    monkeypatch.setattr(jura, "_register_services", lambda _hass: None)
+
+    called = {"n": 0}
+
+    def fake_load_profile(_machine_type):
+        called["n"] += 1
+        return object()
+
+    monkeypatch.setattr(jura, "load_profile", fake_load_profile)
+
+    entry = MagicMock()
+    entry.entry_id = "e2"
+    entry.data = {}
+
+    assert await jura.async_setup_entry(hass, entry) is True
+    assert called["n"] == 0
