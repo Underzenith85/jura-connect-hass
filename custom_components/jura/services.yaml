@@ -46,7 +46,7 @@ brew:
   name: Brew
   description: >-
     Brew a drink. Pick a product by name (optionally overriding
-    strength/water/temperature), or pass a raw recipe payload. This
+    strength/water/temperature/milk/milk-foam), or pass a raw recipe payload. This
     PHYSICALLY brews a drink on the machine.
   fields:
     config_entry_id:
@@ -97,6 +97,29 @@ brew:
         number:
           min: 0
           max: 3
+          mode: box
+    milk_s:
+      name: Milk
+      description: >-
+        Optional milk dispensing time in seconds (JURA machines meter milk by
+        pump time, not volume). Omit for the product's factory default.
+        Clamped to the product's valid range.
+      selector:
+        number:
+          min: 0
+          max: 120
+          unit_of_measurement: s
+          mode: box
+    milk_foam_s:
+      name: Milk foam
+      description: >-
+        Optional milk-foam dispensing time in seconds. Omit for the product's
+        factory default. Clamped to the product's valid range.
+      selector:
+        number:
+          min: 0
+          max: 120
+          unit_of_measurement: s
           mode: box
     recipe:
       name: Recipe (advanced)

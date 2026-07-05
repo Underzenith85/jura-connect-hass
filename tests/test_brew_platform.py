@@ -1,7 +1,7 @@
 """Tests for the compact brew "control panel".
 
-The brew UX is five entities shared across the whole machine (not per
-product): a product select, strength/water/temperature selects (each
+The brew UX is seven entities shared across the whole machine (not per
+product): a product select, strength/water/temperature/milk/milk-foam selects (each
 carrying a "Factory Default" sentinel), and a single brew button.
 Selections are staged on ``coordinator.brew_selection``; the button reads
 them and builds the recipe via the ``jura_connect`` library. Per-product
@@ -26,6 +26,7 @@ jura_connect = pytest.importorskip("jura_connect")
 
 from jura_connect import (  # noqa: E402
     KIND_COFFEE_STRENGTH,
+    KIND_MILK_FOAM_AMOUNT,
     KIND_TEMPERATURE,
     KIND_WATER_AMOUNT,
     load_profile,
@@ -43,6 +44,8 @@ from custom_components.jura.const import (  # noqa: E402
 )
 from custom_components.jura.coordinator import JuraCoordinator  # noqa: E402
 from custom_components.jura.select import (  # noqa: E402
+    BrewMilkFoamSelect,
+    BrewMilkSelect,
     BrewProductSelect,
     BrewStrengthSelect,
     BrewTempSelect,
@@ -98,6 +101,8 @@ def test_coordinator_seeds_first_product_and_default_params():
         "strength": None,
         "water_ml": None,
         "temp": None,
+        "milk_s": None,
+        "milk_foam_s": None,
     }
     assert coordinator.selected_product().name == "espresso"
 
@@ -147,6 +152,8 @@ async def test_product_select_loads_saved_prefs_into_param_selects():
         "strength": 2,
         "water_ml": 130,
         "temp": 1,
+        "milk_s": None,
+        "milk_foam_s": None,
     }
     assert strength.current_option == "2"
     assert water.current_option == "130"
@@ -284,6 +291,64 @@ async def test_temp_select_set_and_factory_default():
 
 
 # ---------------------------------------------------------------------------
+# Milk / milk-foam selects
+# ---------------------------------------------------------------------------
+
+
+async def test_milk_foam_select_options_from_range():
+    coordinator = _coordinator()
+    entry = _entry()
+    product = BrewProductSelect(coordinator, entry)
+    foam = BrewMilkFoamSelect(coordinator, entry)
+    # espresso (the seeded product) has no milk-foam parameter.
+    assert foam.available is False
+    assert foam.options == [FACTORY_DEFAULT]
+    # cappuccino: 1..45 s step 1.
+    await product.async_select_option("cappuccino")
+    assert foam.available is True
+    assert foam.options == [FACTORY_DEFAULT, *[str(v) for v in range(1, 46)]]
+    assert foam.current_option == FACTORY_DEFAULT
+    assert foam.unique_id.endswith("brew_milk_foam_s")
+
+
+async def test_milk_selects_gate_per_product():
+    """Milk vs foam availability tracks what the staged product exposes.
+
+    On the EF1091, cappuccino has only a foam time and the plain milk
+    product has only a milk time — each select must be available exactly
+    where its parameter exists.
+    """
+    coordinator = _coordinator()
+    entry = _entry()
+    product = BrewProductSelect(coordinator, entry)
+    milk = BrewMilkSelect(coordinator, entry)
+    foam = BrewMilkFoamSelect(coordinator, entry)
+
+    await product.async_select_option("cappuccino")
+    assert milk.available is False
+    assert foam.available is True
+
+    await product.async_select_option("milk")
+    assert milk.available is True
+    assert foam.available is False
+    assert milk.options == [FACTORY_DEFAULT, *[str(v) for v in range(1, 46)]]
+
+
+async def test_milk_foam_set_and_factory_default():
+    coordinator = _coordinator()
+    entry = _entry()
+    product = BrewProductSelect(coordinator, entry)
+    foam = BrewMilkFoamSelect(coordinator, entry)
+    await product.async_select_option("cappuccino")
+    await foam.async_select_option("12")
+    assert coordinator.brew_selection["milk_foam_s"] == 12
+    assert foam.current_option == "12"
+    await foam.async_select_option(FACTORY_DEFAULT)
+    assert coordinator.brew_selection["milk_foam_s"] is None
+    assert foam.current_option == FACTORY_DEFAULT
+
+
+# ---------------------------------------------------------------------------
 # Brew button
 # ---------------------------------------------------------------------------
 
@@ -334,8 +399,24 @@ async def test_button_press_coffee_override_vector_via_selection_path():
     coordinator.run_command.assert_awaited_once_with("brew", [expected], allow_destructive=True)
 
 
+async def test_button_press_cappuccino_milk_foam_override_vector():
+    """Select cappuccino + foam 12 s -> the F6 override lands in the recipe."""
+    coordinator = _coordinator()
+    entry = _entry()
+    product = BrewProductSelect(coordinator, entry)
+    foam = BrewMilkFoamSelect(coordinator, entry)
+    button = JuraBrewButton(coordinator, entry)
+
+    await product.async_select_option("cappuccino")
+    await foam.async_select_option("12")
+    await button.async_press()
+
+    expected = _recipe(0x04, {KIND_MILK_FOAM_AMOUNT: 12})
+    coordinator.run_command.assert_awaited_once_with("brew", [expected], allow_destructive=True)
+
+
 # ---------------------------------------------------------------------------
-# Platform setup: the five-entity control panel on a real EF1091
+# Platform setup: the seven-entity control panel on a real EF1091
 # ---------------------------------------------------------------------------
 
 
@@ -363,11 +444,18 @@ async def test_select_setup_builds_control_panel_not_per_product():
     added = await _setup("custom_components.jura.select")
     brew = [e for e in added if _is_brew_select(e)]
     brew_names = {e.name for e in brew}
-    assert brew_names == {"Brew Product", "Brew Strength", "Brew Water", "Brew Temperature"}
+    assert brew_names == {
+        "Brew Product",
+        "Brew Strength",
+        "Brew Water",
+        "Brew Temperature",
+        "Brew Milk",
+        "Brew Milk Foam",
+    }
     # Setting selects are still present...
     assert any(_is_setting_select(e) for e in added)
     # ...but there is exactly one of each brew select (no per-product explosion).
-    assert len(brew) == 4
+    assert len(brew) == 6
 
 
 async def test_button_setup_creates_single_brew_button():
@@ -383,8 +471,8 @@ async def test_number_setup_has_no_per_product_brew_water():
     assert not any("brew" in (e.unique_id or "") for e in added)
 
 
-async def test_ef1091_creates_exactly_five_brew_entities():
+async def test_ef1091_creates_exactly_seven_brew_entities():
     selects = await _setup("custom_components.jura.select")
     buttons = await _setup("custom_components.jura.button")
     brew_selects = [e for e in selects if _is_brew_select(e)]
-    assert len(brew_selects) + len(buttons) == 5
+    assert len(brew_selects) + len(buttons) == 7

@@ -7,8 +7,8 @@ Two families of selects live here:
   ``step_slider`` settings (hardness) are handled by the ``number``
   platform instead.
 * **Brew control panel** — a small, machine-wide set that stages the
-  *next* brew: a product picker plus strength / water / temperature
-  selects. Each parameter select carries a ``"Factory Default"`` option
+  *next* brew: a product picker plus strength / water / temperature /
+  milk / milk-foam selects. Each parameter select carries a ``"Factory Default"`` option
   (meaning "let the recipe builder use the product's XML default" — it does
   NOT mean "use the machine's own configured setting", which JURA WiFi has
   no mechanism for) and recomputes its options from whichever product is
@@ -29,6 +29,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from jura_connect import (
     KIND_COFFEE_STRENGTH,
+    KIND_MILK_AMOUNT,
+    KIND_MILK_FOAM_AMOUNT,
     KIND_TEMPERATURE,
     KIND_WATER_AMOUNT,
     ProductParam,
@@ -107,6 +109,10 @@ def _brew_select_entities(coordinator: JuraCoordinator, config_entry: ConfigEntr
         entities.append(BrewWaterSelect(coordinator, config_entry))
     if any(product.param(KIND_TEMPERATURE) for product in profile.products):
         entities.append(BrewTempSelect(coordinator, config_entry))
+    if any(product.param(KIND_MILK_AMOUNT) for product in profile.products):
+        entities.append(BrewMilkSelect(coordinator, config_entry))
+    if any(product.param(KIND_MILK_FOAM_AMOUNT) for product in profile.products):
+        entities.append(BrewMilkFoamSelect(coordinator, config_entry))
     return entities
 
 
@@ -311,27 +317,23 @@ class BrewTempSelect(_ItemBrewSelect):
     _name_suffix = "Temperature"
 
 
-class BrewWaterSelect(_BrewParamSelect):
-    """Water amount (mL) for the next brew, or Factory Default.
+class _RangeBrewSelect(_BrewParamSelect):
+    """Brew parameter backed by a numeric ``min..max`` range (water/milk/foam).
 
     A select (rather than a number) so it can carry the ``Factory Default``
     sentinel; its options are the product's ``min..max`` range in ``step``
     increments.
     """
 
-    _param_kind = KIND_WATER_AMOUNT
-    _selection_key = "water_ml"
-    _name_suffix = "Water"
-
     @staticmethod
-    def _ml_range(param: ProductParam) -> range:
+    def _value_range(param: ProductParam) -> range:
         low = param.minimum if param.minimum is not None else 0
         high = param.maximum if param.maximum is not None else low
         step = param.step or 1
         return range(low, high + 1, step)
 
     def _value_options(self, param: ProductParam) -> list[str]:
-        return [str(ml) for ml in self._ml_range(param)]
+        return [str(value) for value in self._value_range(param)]
 
     def _value_for_option(self, param: ProductParam, option: str) -> int | None:
         try:
@@ -341,3 +343,31 @@ class BrewWaterSelect(_BrewParamSelect):
 
     def _option_for_value(self, param: ProductParam, value: int) -> str | None:
         return str(value)
+
+
+class BrewWaterSelect(_RangeBrewSelect):
+    """Water amount (mL) for the next brew, or Factory Default."""
+
+    _param_kind = KIND_WATER_AMOUNT
+    _selection_key = "water_ml"
+    _name_suffix = "Water"
+
+
+class BrewMilkSelect(_RangeBrewSelect):
+    """Milk dispensing time (seconds) for the next brew, or Factory Default.
+
+    JURA machines meter milk by pump time, not volume — the F5 recipe byte
+    carries seconds, so that is the unit exposed here.
+    """
+
+    _param_kind = KIND_MILK_AMOUNT
+    _selection_key = "milk_s"
+    _name_suffix = "Milk"
+
+
+class BrewMilkFoamSelect(_RangeBrewSelect):
+    """Milk foam dispensing time (seconds) for the next brew, or Factory Default."""
+
+    _param_kind = KIND_MILK_FOAM_AMOUNT
+    _selection_key = "milk_foam_s"
+    _name_suffix = "Milk Foam"
