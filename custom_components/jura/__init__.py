@@ -14,6 +14,8 @@ try:
     from homeassistant.helpers import entity_registry as er
     from jura_connect import (
         KIND_COFFEE_STRENGTH,
+        KIND_MILK_AMOUNT,
+        KIND_MILK_FOAM_AMOUNT,
         KIND_TEMPERATURE,
         KIND_WATER_AMOUNT,
         ProductDef,
@@ -69,6 +71,8 @@ if _HAS_HOMEASSISTANT:
         "strength": KIND_COFFEE_STRENGTH,
         "water_ml": KIND_WATER_AMOUNT,
         "temperature": KIND_TEMPERATURE,
+        "milk_s": KIND_MILK_AMOUNT,
+        "milk_foam_s": KIND_MILK_FOAM_AMOUNT,
     }
 
     _BASE_TARGET_SCHEMA = vol.Schema(
@@ -90,6 +94,8 @@ if _HAS_HOMEASSISTANT:
             vol.Optional("strength"): vol.Coerce(int),
             vol.Optional("water_ml"): vol.Coerce(int),
             vol.Optional("temperature"): vol.Coerce(int),
+            vol.Optional("milk_s"): vol.Coerce(int),
+            vol.Optional("milk_foam_s"): vol.Coerce(int),
         }
     )
 

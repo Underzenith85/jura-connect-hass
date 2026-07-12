@@ -20,6 +20,8 @@
  *   strength: select.kuche_kaffeebert_brew_strength
  *   water: select.kuche_kaffeebert_brew_water
  *   temperature: select.kuche_kaffeebert_brew_temperature
+ *   milk: select.kuche_kaffeebert_brew_milk
+ *   milk_foam: select.kuche_kaffeebert_brew_milk_foam
  *   button: button.kuche_kaffeebert_brew
  *   status: sensor.kuche_kaffeebert_status
  *   connectivity: binary_sensor.kuche_kaffeebert_connectivity
@@ -40,6 +42,8 @@ const PARAM_ROWS = [
   { key: "strength", label: "Strength", icon: "mdi:coffee" },
   { key: "water", label: "Water", icon: "mdi:cup-water", unit: " mL" },
   { key: "temperature", label: "Temperature", icon: "mdi:thermometer" },
+  { key: "milk", label: "Milk", icon: "mdi:beer-outline", unit: " s" },
+  { key: "milk_foam", label: "Milk Foam", icon: "mdi:chart-bubble", unit: " s" },
 ];
 
 // Map a raw status string to a coffee-machine "mood": drives the banner colour
@@ -121,6 +125,8 @@ class JuraBrewCard extends HTMLElement {
       strength: pick(cfg.strength, "select", "_brew_strength"),
       water: pick(cfg.water, "select", "_brew_water"),
       temperature: pick(cfg.temperature, "select", "_brew_temperature"),
+      milk: pick(cfg.milk, "select", "_brew_milk"),
+      milk_foam: pick(cfg.milk_foam, "select", "_brew_milk_foam"),
       button: cfg.button || pick(null, "button", "_brew"),
       status: pick(cfg.status, "sensor", "_status"),
       connectivity: pick(cfg.connectivity, "binary_sensor", "_connectivity"),

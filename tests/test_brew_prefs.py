@@ -1,6 +1,7 @@
 """Pure (framework-free) per-product brew-preference helpers.
 
-A *brew preference* is the remembered strength / water / temperature for one
+A *brew preference* is the remembered strength / water / temperature / milk /
+milk-foam for one
 product, keyed by its hex Code. ``None`` for a parameter means Factory Default
 (send the product's XML default; pass ``None`` to the ``jura_connect`` library
 builder ``ProductDef.build_recipe_hex``). These helpers only touch plain dicts,
@@ -17,17 +18,29 @@ from custom_components.jura.brew import (
 )
 
 
-def test_brew_params_are_the_three_recipe_axes():
-    assert BREW_PARAMS == ("strength", "water_ml", "temp")
+def test_brew_params_are_the_five_recipe_axes():
+    assert BREW_PARAMS == ("strength", "water_ml", "temp", "milk_s", "milk_foam_s")
 
 
 def test_product_prefs_missing_product_is_all_factory_default():
-    assert product_prefs({}, "03") == {"strength": None, "water_ml": None, "temp": None}
+    assert product_prefs({}, "03") == {
+        "strength": None,
+        "water_ml": None,
+        "temp": None,
+        "milk_s": None,
+        "milk_foam_s": None,
+    }
 
 
 def test_product_prefs_fills_missing_params_with_none():
     prefs = {"03": {"water_ml": 130}}
-    assert product_prefs(prefs, "03") == {"strength": None, "water_ml": 130, "temp": None}
+    assert product_prefs(prefs, "03") == {
+        "strength": None,
+        "water_ml": 130,
+        "temp": None,
+        "milk_s": None,
+        "milk_foam_s": None,
+    }
 
 
 def test_remember_then_load_reproduces_value():
@@ -53,10 +66,12 @@ def test_remember_is_per_product_isolated():
 
 
 def test_selection_for_product_includes_product_code():
-    prefs = {"03": {"strength": 2, "water_ml": 130, "temp": 1}}
+    prefs = {"03": {"strength": 2, "water_ml": 130, "temp": 1, "milk_foam_s": 12}}
     assert selection_for_product(prefs, "03") == {
         "product": "03",
         "strength": 2,
         "water_ml": 130,
         "temp": 1,
+        "milk_s": None,
+        "milk_foam_s": 12,
     }

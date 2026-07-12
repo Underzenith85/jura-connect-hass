@@ -20,6 +20,7 @@ jura_connect = pytest.importorskip("jura_connect")
 
 from jura_connect import (  # noqa: E402
     KIND_COFFEE_STRENGTH,
+    KIND_MILK_FOAM_AMOUNT,
     KIND_TEMPERATURE,
     KIND_WATER_AMOUNT,
     load_profile,
@@ -32,6 +33,8 @@ _PROFILE = load_profile("EF1091")
 _DOPPIO = next(p for p in _PROFILE.products if p.name == "espresso_doppio")
 _DEFAULT_RECIPE = _DOPPIO.build_recipe_hex({})
 _OVERRIDE_RECIPE = _DOPPIO.build_recipe_hex({KIND_COFFEE_STRENGTH: 2, KIND_WATER_AMOUNT: 130, KIND_TEMPERATURE: 1})
+_CAPPUCCINO = next(p for p in _PROFILE.products if p.name == "cappuccino")
+_MILK_FOAM_RECIPE = _CAPPUCCINO.build_recipe_hex({KIND_MILK_FOAM_AMOUNT: 12})
 
 
 def _hass_with_coordinator(coordinator) -> MagicMock:
@@ -116,6 +119,21 @@ async def test_brew_by_product_with_overrides():
     }
     await _brew_handler(hass)(call)
     coordinator.run_command.assert_awaited_once_with("brew", [_OVERRIDE_RECIPE], allow_destructive=True)
+
+
+async def test_brew_by_product_with_milk_foam_override():
+    """The milk_foam_s service field lands on the F6 recipe byte."""
+    coordinator = _mock_coordinator()
+    hass = _hass_with_coordinator(coordinator)
+    _register_services(hass)
+    call = MagicMock()
+    call.data = {
+        "config_entry_id": "test_entry_id",
+        "product": "cappuccino",
+        "milk_foam_s": 12,
+    }
+    await _brew_handler(hass)(call)
+    coordinator.run_command.assert_awaited_once_with("brew", [_MILK_FOAM_RECIPE], allow_destructive=True)
 
 
 async def test_brew_by_product_code_resolves():

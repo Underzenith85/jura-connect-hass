@@ -1,11 +1,11 @@
 """Pure (framework-free) per-product brew-preference helpers.
 
-A *brew preference* is the remembered strength / water / temperature for a
-single product, keyed by the product's hex Code (e.g. ``"03"``). The on-disk /
-in-memory shape is::
+A *brew preference* is the remembered strength / water / temperature / milk /
+milk-foam for a single product, keyed by the product's hex Code (e.g. ``"03"``).
+The on-disk / in-memory shape is::
 
     brew_prefs: dict[str, dict] = {
-        "03": {"strength": 2, "water_ml": 130, "temp": None},
+        "03": {"strength": 2, "water_ml": 130, "temp": None, "milk_s": None, "milk_foam_s": 12},
         ...
     }
 
@@ -27,8 +27,10 @@ module only models the component's remembered-preference shape.
 
 from __future__ import annotations
 
-# The three adjustable recipe axes a preference can pin per product.
-BREW_PARAMS: tuple[str, ...] = ("strength", "water_ml", "temp")
+# The adjustable recipe axes a preference can pin per product. Milk and milk
+# foam are dispensing times in seconds — that is the unit the machines expose
+# (MinMax args on the F5/F6 recipe bytes), not millilitres.
+BREW_PARAMS: tuple[str, ...] = ("strength", "water_ml", "temp", "milk_s", "milk_foam_s")
 
 
 def product_prefs(brew_prefs: dict[str, dict], code: str) -> dict[str, int | None]:
