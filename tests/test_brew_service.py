@@ -35,6 +35,12 @@ _DEFAULT_RECIPE = _DOPPIO.build_recipe_hex({})
 _OVERRIDE_RECIPE = _DOPPIO.build_recipe_hex({KIND_COFFEE_STRENGTH: 2, KIND_WATER_AMOUNT: 130, KIND_TEMPERATURE: 1})
 _CAPPUCCINO = next(p for p in _PROFILE.products if p.name == "cappuccino")
 _MILK_FOAM_RECIPE = _CAPPUCCINO.build_recipe_hex({KIND_MILK_FOAM_AMOUNT: 12})
+_Z10_PROFILE = load_profile("EF545")
+_Z10_ESPRESSO = next(p for p in _Z10_PROFILE.products if p.name == "espresso")
+_Z10_COLD_PLAN = _Z10_PROFILE.plan_preselections(_Z10_ESPRESSO, ["coldbrew"])
+_Z10_COLD_RECIPE = _Z10_COLD_PLAN.product.build_recipe_hex(
+    {}, preselect_mask=_Z10_COLD_PLAN.mask, preselect_bytes=_Z10_COLD_PLAN.byte_overwrites
+)
 
 
 def _hass_with_coordinator(coordinator) -> MagicMock:
@@ -136,6 +142,22 @@ async def test_brew_by_product_with_milk_foam_override():
     coordinator.run_command.assert_awaited_once_with("brew", [_MILK_FOAM_RECIPE], allow_destructive=True)
 
 
+async def test_z10_brew_by_product_with_cold_brew_preselection():
+    coordinator = _mock_coordinator("EF545")
+    hass = _hass_with_coordinator(coordinator)
+    _register_services(hass)
+    call = MagicMock()
+    call.data = {
+        "config_entry_id": "test_entry_id",
+        "product": "espresso",
+        "preselection": "coldbrew",
+    }
+
+    await _brew_handler(hass)(call)
+
+    coordinator.run_command.assert_awaited_once_with("brew", [_Z10_COLD_RECIPE], allow_destructive=True)
+
+
 async def test_brew_by_product_code_resolves():
     """A 2-hex product Code also resolves (espresso_doppio is code 0x30)."""
     coordinator = _mock_coordinator()
@@ -191,6 +213,20 @@ async def test_brew_rejects_product_and_recipe_together():
     _register_services(hass)
     call = MagicMock()
     call.data = {"config_entry_id": "test_entry_id", "product": "espresso_doppio", "recipe": "01"}
+    with pytest.raises(vol.Invalid):
+        await _brew_handler(hass)(call)
+
+
+async def test_brew_rejects_preselection_with_raw_recipe():
+    coordinator = _mock_coordinator()
+    hass = _hass_with_coordinator(coordinator)
+    _register_services(hass)
+    call = MagicMock()
+    call.data = {
+        "config_entry_id": "test_entry_id",
+        "recipe": "01",
+        "preselection": "coldbrew",
+    }
     with pytest.raises(vol.Invalid):
         await _brew_handler(hass)(call)
 

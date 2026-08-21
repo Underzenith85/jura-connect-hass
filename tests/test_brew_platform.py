@@ -47,6 +47,7 @@ from custom_components.jura.select import (  # noqa: E402
     BrewMilkFoamSelect,
     BrewMilkSelect,
     BrewProductSelect,
+    BrewPreselectionSelect,
     BrewStrengthSelect,
     BrewTempSelect,
     BrewWaterSelect,
@@ -103,6 +104,7 @@ def test_coordinator_seeds_first_product_and_default_params():
         "temp": None,
         "milk_s": None,
         "milk_foam_s": None,
+        "preselection": None,
     }
     assert coordinator.selected_product().name == "espresso"
 
@@ -154,6 +156,7 @@ async def test_product_select_loads_saved_prefs_into_param_selects():
         "temp": 1,
         "milk_s": None,
         "milk_foam_s": None,
+        "preselection": None,
     }
     assert strength.current_option == "2"
     assert water.current_option == "130"
@@ -348,6 +351,42 @@ async def test_milk_foam_set_and_factory_default():
     assert foam.current_option == FACTORY_DEFAULT
 
 
+async def test_z10_preselection_options_filter_unencodable_xml_controls():
+    coordinator = _coordinator(_entry("EF545"))
+    entity = BrewPreselectionSelect(coordinator, _entry("EF545"))
+
+    assert entity.options == [FACTORY_DEFAULT, "Cold Brew", "Double", "Ground Coffee"]
+    assert "Sweet Foam" not in entity.options
+    assert entity.current_option == FACTORY_DEFAULT
+
+
+async def test_z10_preselection_is_persisted_per_product():
+    entry = _entry("EF545")
+    coordinator = _coordinator(entry)
+    await coordinator.async_load_brew_prefs()
+    entity = BrewPreselectionSelect(coordinator, entry)
+
+    await entity.async_select_option("Cold Brew")
+
+    assert coordinator.brew_selection["preselection"] == "coldbrew"
+    assert coordinator.brew_prefs["02"]["preselection"] == "coldbrew"
+
+
+async def test_z10_button_applies_cold_brew_plan():
+    entry = _entry("EF545")
+    coordinator = _coordinator(entry)
+    preselection = BrewPreselectionSelect(coordinator, entry)
+    button = JuraBrewButton(coordinator, entry)
+
+    await preselection.async_select_option("Cold Brew")
+    await button.async_press()
+
+    product = coordinator.selected_product()
+    plan = coordinator.brew_profile.plan_preselections(product, ["coldbrew"])
+    expected = plan.product.build_recipe_hex({}, preselect_mask=plan.mask, preselect_bytes=plan.byte_overwrites)
+    coordinator.run_command.assert_awaited_once_with("brew", [expected], allow_destructive=True)
+
+
 # ---------------------------------------------------------------------------
 # Brew button
 # ---------------------------------------------------------------------------
@@ -451,11 +490,12 @@ async def test_select_setup_builds_control_panel_not_per_product():
         "Brew Temperature",
         "Brew Milk",
         "Brew Milk Foam",
+        "Brew Preselection",
     }
     # Setting selects are still present...
     assert any(_is_setting_select(e) for e in added)
     # ...but there is exactly one of each brew select (no per-product explosion).
-    assert len(brew) == 6
+    assert len(brew) == 7
 
 
 async def test_button_setup_creates_single_brew_button():
@@ -471,8 +511,8 @@ async def test_number_setup_has_no_per_product_brew_water():
     assert not any("brew" in (e.unique_id or "") for e in added)
 
 
-async def test_ef1091_creates_exactly_seven_brew_entities():
+async def test_ef1091_creates_exactly_eight_brew_entities():
     selects = await _setup("custom_components.jura.select")
     buttons = await _setup("custom_components.jura.button")
     brew_selects = [e for e in selects if _is_brew_select(e)]
-    assert len(brew_selects) + len(buttons) == 7
+    assert len(brew_selects) + len(buttons) == 8

@@ -24,6 +24,7 @@ try:
 
     from .const import CONF_MACHINE_TYPE, DOMAIN
     from .coordinator import JuraCoordinator
+    from .brew import build_recipe
 
     _HAS_HOMEASSISTANT = True
 except ImportError:
@@ -96,6 +97,7 @@ if _HAS_HOMEASSISTANT:
             vol.Optional("temperature"): vol.Coerce(int),
             vol.Optional("milk_s"): vol.Coerce(int),
             vol.Optional("milk_foam_s"): vol.Coerce(int),
+            vol.Optional("preselection"): str,
         }
     )
 
@@ -199,19 +201,23 @@ def _register_services(hass: HomeAssistant) -> None:
         coordinator = _get_coordinator(hass, config_entry_id)
         product_name = call.data.get("product")
         recipe = call.data.get("recipe")
+        preselection = call.data.get("preselection")
         if product_name and recipe:
             raise vol.Invalid("Provide either product or recipe, not both")
+        if recipe and preselection:
+            raise vol.Invalid("Preselection requires a product, not a raw recipe")
         if product_name:
             machine_type = coordinator.config_entry.data.get(CONF_MACHINE_TYPE)
             product = _find_product(machine_type, product_name)
             if product is None:
                 raise ValueError(f"Unknown product {product_name!r} for machine {machine_type!r}")
+            profile = load_profile(machine_type)
             overrides: dict[str, int | str] = {}
             for axis, kind in _BREW_SERVICE_KINDS.items():
                 value = call.data.get(axis)
                 if value is not None:
                     overrides[kind] = value
-            recipe = product.build_recipe_hex(overrides)
+            recipe = build_recipe(profile, product, overrides, preselection)
         elif not recipe:
             raise vol.Invalid("Provide either product or recipe")
         return await coordinator.run_command("brew", [recipe], allow_destructive=True)

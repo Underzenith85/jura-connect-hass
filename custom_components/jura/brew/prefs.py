@@ -30,10 +30,10 @@ from __future__ import annotations
 # The adjustable recipe axes a preference can pin per product. Milk and milk
 # foam are dispensing times in seconds — that is the unit the machines expose
 # (MinMax args on the F5/F6 recipe bytes), not millilitres.
-BREW_PARAMS: tuple[str, ...] = ("strength", "water_ml", "temp", "milk_s", "milk_foam_s")
+BREW_PARAMS: tuple[str, ...] = ("strength", "water_ml", "temp", "milk_s", "milk_foam_s", "preselection")
 
 
-def product_prefs(brew_prefs: dict[str, dict], code: str) -> dict[str, int | None]:
+def product_prefs(brew_prefs: dict[str, dict], code: str) -> dict[str, int | str | None]:
     """Return ``code``'s stored prefs, with every missing param as ``None``.
 
     Both an absent product and an absent / explicitly-``None`` parameter map to
@@ -53,7 +53,7 @@ def selection_for_product(brew_prefs: dict[str, dict], code: str) -> dict[str, i
     return {"product": code, **product_prefs(brew_prefs, code)}
 
 
-def remember_param(brew_prefs: dict[str, dict], code: str, param: str, value: int | None) -> None:
+def remember_param(brew_prefs: dict[str, dict], code: str, param: str, value: int | str | None) -> None:
     """Persist ``value`` for ``param`` of product ``code`` (mutates ``brew_prefs``).
 
     ``value`` may be ``None`` to explicitly record Factory Default for that

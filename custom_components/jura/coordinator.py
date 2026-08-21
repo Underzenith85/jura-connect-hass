@@ -159,6 +159,7 @@ class JuraCoordinator(DataUpdateCoordinator[MachineSnapshot]):
             "temp": None,
             "milk_s": None,
             "milk_foam_s": None,
+            "preselection": None,
         }
         if self.brew_profile is not None and self.brew_profile.products:
             self.brew_selection["product"] = f"{self.brew_profile.products[0].code:02X}"
@@ -167,7 +168,7 @@ class JuraCoordinator(DataUpdateCoordinator[MachineSnapshot]):
         # where ``None`` == Factory
         # Default. Loaded from disk by ``async_load_brew_prefs`` at setup and
         # written back (debounced) by ``save_brew_prefs``.
-        self.brew_prefs: dict[str, dict[str, int | None]] = {}
+        self.brew_prefs: dict[str, dict[str, int | str | None]] = {}
         self._brew_prefs_store: Store | None = None
         # Serialise all machine I/O (polls + commands + setting writes) so the
         # coordinator never opens a second TCP session while one is in flight —
@@ -242,7 +243,7 @@ class JuraCoordinator(DataUpdateCoordinator[MachineSnapshot]):
         """
         self.brew_selection.update(selection_for_product(self.brew_prefs, code))
 
-    def set_brew_param(self, param: str, value: int | None) -> None:
+    def set_brew_param(self, param: str, value: int | str | None) -> None:
         """Stage ``value`` for ``param`` and remember it for the current product.
 
         ``value`` is ``None`` for Factory Default, else the chosen value. Both

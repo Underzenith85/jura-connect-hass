@@ -27,6 +27,7 @@ from jura_connect import (
 from .const import DOMAIN
 from .coordinator import JuraCoordinator
 from .entity import JuraEntity
+from .brew import build_recipe
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -81,5 +82,9 @@ class JuraBrewButton(JuraEntity, ButtonEntity):
             value = selection.get(axis)
             if value is not None:
                 overrides[kind] = value
-        recipe = product.build_recipe_hex(overrides)
+        profile = self.coordinator.brew_profile
+        if profile is None:
+            return
+        preselection = selection.get("preselection")
+        recipe = build_recipe(profile, product, overrides, str(preselection) if preselection else None)
         await self.coordinator.run_command("brew", [recipe], allow_destructive=True)

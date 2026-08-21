@@ -37,6 +37,7 @@ from jura_connect import (
     load_profile,
 )
 
+from .brew import encodable_preselections
 from .const import CONF_MACHINE_TYPE, DOMAIN
 from .coordinator import JuraCoordinator
 from .entity import JuraEntity
@@ -113,6 +114,8 @@ def _brew_select_entities(coordinator: JuraCoordinator, config_entry: ConfigEntr
         entities.append(BrewMilkSelect(coordinator, config_entry))
     if any(product.param(KIND_MILK_FOAM_AMOUNT) for product in profile.products):
         entities.append(BrewMilkFoamSelect(coordinator, config_entry))
+    if any(encodable_preselections(profile, product) for product in profile.products):
+        entities.append(BrewPreselectionSelect(coordinator, config_entry))
     return entities
 
 
@@ -371,3 +374,49 @@ class BrewMilkFoamSelect(_RangeBrewSelect):
     _param_kind = KIND_MILK_FOAM_AMOUNT
     _selection_key = "milk_foam_s"
     _name_suffix = "Milk Foam"
+
+
+class BrewPreselectionSelect(JuraEntity, SelectEntity):
+    """Optional specialty mode for the next brew (Cold Brew, Double, etc.)."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, coordinator: JuraCoordinator, config_entry: ConfigEntry) -> None:
+        super().__init__(coordinator, config_entry)
+        self._attr_name = "Brew Preselection"
+        self._attr_unique_id = f"{DOMAIN}_{self._slug}_brew_preselection"
+
+    def _choices(self) -> dict[str, str]:
+        profile = self.coordinator.brew_profile
+        product = self.coordinator.selected_product()
+        if profile is None or product is None:
+            return {}
+        return encodable_preselections(profile, product)
+
+    @property
+    def available(self) -> bool:
+        return bool(self._choices())
+
+    @property
+    def options(self) -> list[str]:
+        return [FACTORY_DEFAULT, *self._choices().values()]
+
+    @property
+    def current_option(self) -> str | None:
+        if not self.available:
+            return None
+        selected = self.coordinator.brew_selection.get("preselection")
+        if selected is None:
+            return FACTORY_DEFAULT
+        return self._choices().get(str(selected))
+
+    async def async_select_option(self, option: str) -> None:
+        if option == FACTORY_DEFAULT:
+            value: str | None = None
+        else:
+            value = next((name for name, label in self._choices().items() if label == option), None)
+            if value is None:
+                return
+        self.coordinator.set_brew_param("preselection", value)
+        await self.coordinator.save_brew_prefs()
+        self.async_write_ha_state()

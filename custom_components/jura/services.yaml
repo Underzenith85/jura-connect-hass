@@ -121,6 +121,15 @@ brew:
           max: 120
           unit_of_measurement: s
           mode: box
+    preselection:
+      name: Preselection
+      description: >-
+        Optional profile-supported specialty mode, such as coldbrew, double,
+        powder, or xtrashot. The value is validated for the selected product
+        before any command is sent.
+      example: coldbrew
+      selector:
+        text:
     recipe:
       name: Recipe (advanced)
       description: >-

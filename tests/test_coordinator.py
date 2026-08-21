@@ -338,6 +338,7 @@ def test_select_brew_product_loads_saved_prefs_into_selection(mock_backend, fake
         "temp": 1,
         "milk_s": None,
         "milk_foam_s": None,
+        "preselection": None,
     }
 
 
@@ -352,6 +353,7 @@ def test_select_brew_product_without_prefs_is_all_factory_default(mock_backend, 
         "temp": None,
         "milk_s": None,
         "milk_foam_s": None,
+        "preselection": None,
     }
 
 
