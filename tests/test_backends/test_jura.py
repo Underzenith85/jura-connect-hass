@@ -16,6 +16,7 @@ simulator = pytest.importorskip("jura_connect.simulator")
 from custom_components.jura.backends import jura as jura_backend  # noqa: E402
 from custom_components.jura.backends.jura import (  # noqa: E402
     JuraConnectBackend,
+    _resolve_profile_and_name,
     machine_type_from_article,
 )
 
@@ -202,6 +203,19 @@ async def test_run_named_status(running_simulator):
 async def test_machine_type_from_article_none_returns_none():
     """A missing article number resolves to no EF code without touching disk."""
     assert await machine_type_from_article(None) is None
+
+
+async def test_machine_type_from_z10_naa_article():
+    """The North American Z10 article selects the shared EF545 profile."""
+    assert await machine_type_from_article(15636) == "EF545"
+
+
+def test_shared_z10_profile_uses_region_neutral_name():
+    """An EF code shared by regional variants must not claim the first one."""
+    profile, friendly = _resolve_profile_and_name("EF545")
+
+    assert profile is not None
+    assert friendly == "Z10"
 
 
 async def test_machine_type_from_article_offloads_blocking_lookup(monkeypatch):

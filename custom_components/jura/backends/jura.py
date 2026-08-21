@@ -51,14 +51,17 @@ def _resolve_profile_and_name(machine_type: str | None) -> tuple[MachineProfile 
     except KeyError:
         _LOGGER.warning("unknown machine_type %r, falling through to baseline", machine_type)
         return None, None
-    # Friendly-name lookup: walk the catalogue once.
-    friendly: str | None = None
+    # Multiple regional variants can share one EF profile. In that case the
+    # EF code cannot identify a specific suffix, so report the common model
+    # name instead of whichever catalogue entry happens to come first.
     from jura_connect import known_machine_names
 
-    for name, code in known_machine_names():
-        if code == machine_type:
-            friendly = name
-            break
+    matches = [name for name, code in known_machine_names() if code == machine_type]
+    friendly: str | None = matches[0] if matches else None
+    if len(matches) > 1:
+        model_names = {name.partition(" (")[0] for name in matches}
+        if len(model_names) == 1:
+            friendly = model_names.pop()
     return profile, friendly
 
 
@@ -167,19 +170,8 @@ class JuraConnectBackend(JuraBackend):
                 errors=info.status.errors,
                 info=info.status.info,
                 process=info.status.process,
-                counters={
-                    "cleaning": info.maintenance_counters.cleaning,
-                    "filter_change": info.maintenance_counters.filter_change,
-                    "descale": info.maintenance_counters.descale,
-                    "cappu_rinse": info.maintenance_counters.cappu_rinse,
-                    "coffee_rinse": info.maintenance_counters.coffee_rinse,
-                    "cappu_clean": info.maintenance_counters.cappu_clean,
-                },
-                percents={
-                    "cleaning": info.maintenance_percent.cleaning,
-                    "filter_change": info.maintenance_percent.filter_change,
-                    "descale": info.maintenance_percent.descale,
-                },
+                counters=dict(info.maintenance_counters.counters),
+                percents=dict(info.maintenance_percent.percent),
                 raw_status_hex=info.status.raw.hex().upper(),
                 brews=brews,
                 brews_total=brews_total,

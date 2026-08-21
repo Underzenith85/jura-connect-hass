@@ -9,7 +9,7 @@ TT237W series). Built on the reverse-engineered
 directly to the machine's WiFi dongle on TCP/51515. No cloud, no vendor
 account.
 
-Requires `jura_connect>=0.9.1`. The integration ships the Python dependency
+Requires `jura_connect>=0.13.0`. The integration ships the Python dependency
 declaration; Nix users get it pinned via the flake input.
 
 ## Features
