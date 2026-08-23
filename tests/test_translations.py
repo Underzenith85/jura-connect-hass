@@ -15,6 +15,8 @@ from pathlib import Path
 import pytest
 
 from custom_components.jura.const import ALERT_BINARY_SENSORS, COUNTER_KEYS, PERCENT_KEYS
+from custom_components.jura.brew import PRESELECTION_TRANSLATION_KEYS
+from custom_components.jura.select import BREW_PRODUCT_TRANSLATION_KEYS, FACTORY_DEFAULT
 
 _COMPONENT = Path(__file__).resolve().parent.parent / "custom_components" / "jura"
 
@@ -48,8 +50,18 @@ def _expected_keys() -> dict[str, set[str]]:
     return {
         "sensor": sensor,
         "binary_sensor": binary_sensor,
-        "select": {"setting"},
+        "select": {
+            "setting",
+            "brew_product",
+            "brew_strength",
+            "brew_water",
+            "brew_temperature",
+            "brew_milk",
+            "brew_milk_foam",
+            "brew_preselection",
+        },
         "number": {"setting"},
+        "button": {"brew"},
     }
 
 
@@ -113,3 +125,20 @@ def test_german_actually_translates(strings, de):
 
 def test_strings_and_en_mirror_match(strings, en):
     assert strings["entity"] == en["entity"]
+
+
+@pytest.mark.parametrize("catalog_name", ["strings.json", "translations/en.json", "translations/de.json"])
+def test_brew_product_states_cover_known_profile_names(catalog_name):
+    states = _load(catalog_name)["entity"]["select"]["brew_product"]["state"]
+    assert set(states) == BREW_PRODUCT_TRANSLATION_KEYS
+
+
+@pytest.mark.parametrize("catalog_name", ["strings.json", "translations/en.json", "translations/de.json"])
+def test_brew_preselection_states_cover_known_values_and_default(catalog_name):
+    states = _load(catalog_name)["entity"]["select"]["brew_preselection"]["state"]
+    assert set(states) == {FACTORY_DEFAULT, *PRESELECTION_TRANSLATION_KEYS}
+
+
+def test_z10_americano_english_friendly_name(strings):
+    states = strings["entity"]["select"]["brew_product"]["state"]
+    assert states["cafe_barista"] == "Americano"

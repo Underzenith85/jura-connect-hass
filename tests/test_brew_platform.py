@@ -44,6 +44,7 @@ from custom_components.jura.const import (  # noqa: E402
 )
 from custom_components.jura.coordinator import JuraCoordinator  # noqa: E402
 from custom_components.jura.select import (  # noqa: E402
+    BREW_PRODUCT_TRANSLATION_KEYS,
     BrewMilkFoamSelect,
     BrewMilkSelect,
     BrewProductSelect,
@@ -54,7 +55,7 @@ from custom_components.jura.select import (  # noqa: E402
 )
 from homeassistant.config_entries import ConfigEntry  # noqa: E402
 
-FACTORY_DEFAULT = "Factory Default"
+FACTORY_DEFAULT = "factory_default"
 
 _PROFILE = load_profile("EF1091")
 # EF1091 product names, in profile order (the brewable product table).
@@ -117,10 +118,30 @@ def test_coordinator_seeds_first_product_and_default_params():
 def test_product_select_options_and_current(fake_config_entry):
     coordinator = _coordinator()
     entity = BrewProductSelect(coordinator, _entry())
-    assert entity.options == _PRODUCT_NAMES
+    expected = [
+        name if name in BREW_PRODUCT_TRANSLATION_KEYS else name.replace("_", " ").title() for name in _PRODUCT_NAMES
+    ]
+    assert entity.options == expected
     assert entity.current_option == "espresso"
     assert entity.entity_category == "config"
     assert entity.unique_id.endswith("brew_product")
+    assert entity._attr_translation_key == "brew_product"
+
+
+def test_untranslated_profile_product_has_friendly_fallback():
+    coordinator = _coordinator()
+    entity = BrewProductSelect(coordinator, _entry())
+
+    assert "Sweet Latte" in entity.options
+    assert "sweet_latte" not in entity.options
+
+
+def test_z10_americano_keeps_canonical_value_for_translation():
+    coordinator = _coordinator(_entry("EF545"))
+    entity = BrewProductSelect(coordinator, _entry("EF545"))
+
+    assert "cafe_barista" in entity.options
+    assert "Americano" not in entity.options
 
 
 async def test_product_select_sets_code_and_loads_factory_default_params():
@@ -355,8 +376,8 @@ async def test_z10_preselection_options_filter_unencodable_xml_controls():
     coordinator = _coordinator(_entry("EF545"))
     entity = BrewPreselectionSelect(coordinator, _entry("EF545"))
 
-    assert entity.options == [FACTORY_DEFAULT, "Cold Brew", "Double", "Ground Coffee"]
-    assert "Sweet Foam" not in entity.options
+    assert entity.options == [FACTORY_DEFAULT, "coldbrew", "double", "powder"]
+    assert "fakesweetfoam" not in entity.options
     assert entity.current_option == FACTORY_DEFAULT
 
 
@@ -366,7 +387,7 @@ async def test_z10_preselection_is_persisted_per_product():
     await coordinator.async_load_brew_prefs()
     entity = BrewPreselectionSelect(coordinator, entry)
 
-    await entity.async_select_option("Cold Brew")
+    await entity.async_select_option("coldbrew")
 
     assert coordinator.brew_selection["preselection"] == "coldbrew"
     assert coordinator.brew_prefs["02"]["preselection"] == "coldbrew"
@@ -378,7 +399,7 @@ async def test_z10_button_applies_cold_brew_plan():
     preselection = BrewPreselectionSelect(coordinator, entry)
     button = JuraBrewButton(coordinator, entry)
 
-    await preselection.async_select_option("Cold Brew")
+    await preselection.async_select_option("coldbrew")
     await button.async_press()
 
     product = coordinator.selected_product()
@@ -395,7 +416,7 @@ async def test_z10_button_applies_cold_brew_plan():
 def test_button_name_and_unique_id():
     coordinator = _coordinator()
     button = JuraBrewButton(coordinator, _entry())
-    assert button.name == "Brew"
+    assert button._attr_translation_key == "brew"
     assert button.unique_id.endswith("homeassistant_test_brew")
 
 
@@ -482,15 +503,15 @@ def _is_setting_select(entity) -> bool:
 async def test_select_setup_builds_control_panel_not_per_product():
     added = await _setup("custom_components.jura.select")
     brew = [e for e in added if _is_brew_select(e)]
-    brew_names = {e.name for e in brew}
-    assert brew_names == {
-        "Brew Product",
-        "Brew Strength",
-        "Brew Water",
-        "Brew Temperature",
-        "Brew Milk",
-        "Brew Milk Foam",
-        "Brew Preselection",
+    translation_keys = {e._attr_translation_key for e in brew}
+    assert translation_keys == {
+        "brew_product",
+        "brew_strength",
+        "brew_water",
+        "brew_temperature",
+        "brew_milk",
+        "brew_milk_foam",
+        "brew_preselection",
     }
     # Setting selects are still present...
     assert any(_is_setting_select(e) for e in added)
@@ -501,7 +522,7 @@ async def test_select_setup_builds_control_panel_not_per_product():
 async def test_button_setup_creates_single_brew_button():
     added = await _setup("custom_components.jura.button")
     assert len(added) == 1
-    assert added[0].name == "Brew"
+    assert added[0]._attr_translation_key == "brew"
 
 
 async def test_number_setup_has_no_per_product_brew_water():

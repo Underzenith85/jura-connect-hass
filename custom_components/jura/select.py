@@ -49,7 +49,40 @@ SELECT_KINDS = {"switch", "combobox", "item_slider"}
 # Sentinel option meaning "don't override — let the recipe builder use the
 # product's XML/factory default value". This is NOT "use the machine's own
 # stored setting": JURA WiFi exposes no such mechanism.
-FACTORY_DEFAULT = "Factory Default"
+FACTORY_DEFAULT = "factory_default"
+
+# Product identifiers covered by entity.select.brew_product.state. Keep the
+# wire/profile identifier as the select value; Home Assistant renders the
+# localized label. A profile added by a newer jura_connect still gets a
+# readable fallback until its translation lands here.
+BREW_PRODUCT_TRANSLATION_KEYS = {
+    "espresso",
+    "coffee",
+    "cappuccino",
+    "milkcoffee",
+    "espresso_macchiato",
+    "latte_macchiato",
+    "milk_foam",
+    "milk",
+    "pot",
+    "hotwater_portion",
+    "2_espressi",
+    "2_coffee",
+    "cafe_barista",
+    "barista_lungo",
+    "cortado",
+    "hotwater_portion_green_tea",
+    "flat_white",
+    "espresso_doppio",
+    "2_cafe_barista",
+    "2_barista_lungo",
+    "powderproduct",
+}
+
+
+def _product_option(name: str) -> str:
+    """Return a translatable stable value or a friendly future fallback."""
+    return name if name in BREW_PRODUCT_TRANSLATION_KEYS else name.replace("_", " ").title()
 
 
 async def async_setup_entry(
@@ -173,7 +206,7 @@ class BrewProductSelect(JuraEntity, SelectEntity):
 
     def __init__(self, coordinator: JuraCoordinator, config_entry: ConfigEntry) -> None:
         super().__init__(coordinator, config_entry)
-        self._attr_name = "Brew Product"
+        self._attr_translation_key = "brew_product"
         self._attr_unique_id = f"{DOMAIN}_{self._slug}_brew_product"
 
     @property
@@ -181,7 +214,7 @@ class BrewProductSelect(JuraEntity, SelectEntity):
         profile = self.coordinator.brew_profile
         if profile is None:
             return []
-        return [product.name for product in profile.products]
+        return [_product_option(product.name) for product in profile.products]
 
     @property
     def available(self) -> bool:
@@ -190,14 +223,14 @@ class BrewProductSelect(JuraEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         product = self.coordinator.selected_product()
-        return product.name if product is not None else None
+        return _product_option(product.name) if product is not None else None
 
     async def async_select_option(self, option: str) -> None:
         profile = self.coordinator.brew_profile
         if profile is None:
             return
         for product in profile.products:
-            if product.name == option:
+            if _product_option(product.name) == option:
                 # Make this the current product and load its saved prefs into
                 # the staged selection (keyed by the 2-hex Code string).
                 self.coordinator.select_brew_product(f"{product.code:02X}")
@@ -222,11 +255,11 @@ class _BrewParamSelect(JuraEntity, SelectEntity):
     _attr_entity_category = EntityCategory.CONFIG
     _param_kind: str
     _selection_key: str
-    _name_suffix: str
+    _translation_key: str
 
     def __init__(self, coordinator: JuraCoordinator, config_entry: ConfigEntry) -> None:
         super().__init__(coordinator, config_entry)
-        self._attr_name = f"Brew {self._name_suffix}"
+        self._attr_translation_key = self._translation_key
         self._attr_unique_id = f"{DOMAIN}_{self._slug}_brew_{self._selection_key}"
 
     def _param(self) -> ProductParam | None:
@@ -309,7 +342,7 @@ class BrewStrengthSelect(_ItemBrewSelect):
 
     _param_kind = KIND_COFFEE_STRENGTH
     _selection_key = "strength"
-    _name_suffix = "Strength"
+    _translation_key = "brew_strength"
 
 
 class BrewTempSelect(_ItemBrewSelect):
@@ -317,7 +350,7 @@ class BrewTempSelect(_ItemBrewSelect):
 
     _param_kind = KIND_TEMPERATURE
     _selection_key = "temp"
-    _name_suffix = "Temperature"
+    _translation_key = "brew_temperature"
 
 
 class _RangeBrewSelect(_BrewParamSelect):
@@ -353,7 +386,7 @@ class BrewWaterSelect(_RangeBrewSelect):
 
     _param_kind = KIND_WATER_AMOUNT
     _selection_key = "water_ml"
-    _name_suffix = "Water"
+    _translation_key = "brew_water"
 
 
 class BrewMilkSelect(_RangeBrewSelect):
@@ -365,7 +398,7 @@ class BrewMilkSelect(_RangeBrewSelect):
 
     _param_kind = KIND_MILK_AMOUNT
     _selection_key = "milk_s"
-    _name_suffix = "Milk"
+    _translation_key = "brew_milk"
 
 
 class BrewMilkFoamSelect(_RangeBrewSelect):
@@ -373,7 +406,7 @@ class BrewMilkFoamSelect(_RangeBrewSelect):
 
     _param_kind = KIND_MILK_FOAM_AMOUNT
     _selection_key = "milk_foam_s"
-    _name_suffix = "Milk Foam"
+    _translation_key = "brew_milk_foam"
 
 
 class BrewPreselectionSelect(JuraEntity, SelectEntity):
@@ -383,7 +416,7 @@ class BrewPreselectionSelect(JuraEntity, SelectEntity):
 
     def __init__(self, coordinator: JuraCoordinator, config_entry: ConfigEntry) -> None:
         super().__init__(coordinator, config_entry)
-        self._attr_name = "Brew Preselection"
+        self._attr_translation_key = "brew_preselection"
         self._attr_unique_id = f"{DOMAIN}_{self._slug}_brew_preselection"
 
     def _choices(self) -> dict[str, str]:
