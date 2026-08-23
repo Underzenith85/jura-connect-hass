@@ -65,7 +65,7 @@ class JuraBrewButton(JuraEntity, ButtonEntity):
 
     def __init__(self, coordinator: JuraCoordinator, config_entry: ConfigEntry) -> None:
         super().__init__(coordinator, config_entry)
-        self._attr_name = "Brew"
+        self._attr_translation_key = "brew"
         self._attr_unique_id = f"{DOMAIN}_{self._slug}_brew"
 
     @property

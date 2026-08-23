@@ -166,6 +166,76 @@
         "select": {
             "setting": {
                 "name": "Einstellung {setting}"
+            },
+            "brew_product": {
+                "name": "Brühprodukt",
+                "state": {
+                    "espresso": "Espresso",
+                    "coffee": "Kaffee",
+                    "cappuccino": "Cappuccino",
+                    "milkcoffee": "Milchkaffee",
+                    "espresso_macchiato": "Espresso macchiato",
+                    "latte_macchiato": "Latte macchiato",
+                    "milk_foam": "Milchschaum",
+                    "milk": "Milch",
+                    "pot": "Kännchen Kaffee",
+                    "hotwater_portion": "Heißwasser",
+                    "2_espressi": "Zwei Espressi",
+                    "2_coffee": "Zwei Kaffee",
+                    "cafe_barista": "Americano",
+                    "barista_lungo": "Lungo Barista",
+                    "cortado": "Cortado",
+                    "hotwater_portion_green_tea": "Heißwasser für Grüntee",
+                    "flat_white": "Flat White",
+                    "espresso_doppio": "Espresso doppio",
+                    "2_cafe_barista": "Zwei Americanos",
+                    "2_barista_lungo": "Zwei Lungo Barista",
+                    "powderproduct": "Gemahlener Kaffee"
+                }
+            },
+            "brew_strength": {
+                "name": "Brühstärke",
+                "state": { "factory_default": "Werkseinstellung" }
+            },
+            "brew_water": {
+                "name": "Brühwassermenge",
+                "state": { "factory_default": "Werkseinstellung" }
+            },
+            "brew_temperature": {
+                "name": "Brühtemperatur",
+                "state": {
+                    "factory_default": "Werkseinstellung",
+                    "low": "Niedrig",
+                    "normal": "Normal",
+                    "high": "Hoch"
+                }
+            },
+            "brew_milk": {
+                "name": "Brühmilchmenge",
+                "state": { "factory_default": "Werkseinstellung" }
+            },
+            "brew_milk_foam": {
+                "name": "Brühmilchschaummenge",
+                "state": { "factory_default": "Werkseinstellung" }
+            },
+            "brew_preselection": {
+                "name": "Brühvorwahl",
+                "state": {
+                    "factory_default": "Werkseinstellung",
+                    "coldbrew": "Cold Brew",
+                    "double": "Doppelt",
+                    "fakesweetfoam": "Sweet Foam",
+                    "lightbrew": "Leicht gebrüht",
+                    "powder": "Gemahlener Kaffee",
+                    "strongcoldbrew": "Starker Cold Brew",
+                    "sweetfoam": "Sweet Foam",
+                    "xtrashot": "Extra Shot"
+                }
+            }
+        },
+        "button": {
+            "brew": {
+                "name": "Brühen"
             }
         },
         "number": {

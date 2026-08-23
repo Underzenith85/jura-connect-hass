@@ -225,6 +225,76 @@
         "select": {
             "setting": {
                 "name": "Setting {setting}"
+            },
+            "brew_product": {
+                "name": "Brew product",
+                "state": {
+                    "espresso": "Espresso",
+                    "coffee": "Coffee",
+                    "cappuccino": "Cappuccino",
+                    "milkcoffee": "Milk coffee",
+                    "espresso_macchiato": "Espresso macchiato",
+                    "latte_macchiato": "Latte macchiato",
+                    "milk_foam": "Milk foam",
+                    "milk": "Milk",
+                    "pot": "Pot of coffee",
+                    "hotwater_portion": "Hot water",
+                    "2_espressi": "Two espressos",
+                    "2_coffee": "Two coffees",
+                    "cafe_barista": "Americano",
+                    "barista_lungo": "Lungo Barista",
+                    "cortado": "Cortado",
+                    "hotwater_portion_green_tea": "Hot water for green tea",
+                    "flat_white": "Flat white",
+                    "espresso_doppio": "Espresso doppio",
+                    "2_cafe_barista": "Two Americanos",
+                    "2_barista_lungo": "Two Lungo Baristas",
+                    "powderproduct": "Ground coffee"
+                }
+            },
+            "brew_strength": {
+                "name": "Brew strength",
+                "state": { "factory_default": "Factory default" }
+            },
+            "brew_water": {
+                "name": "Brew water",
+                "state": { "factory_default": "Factory default" }
+            },
+            "brew_temperature": {
+                "name": "Brew temperature",
+                "state": {
+                    "factory_default": "Factory default",
+                    "low": "Low",
+                    "normal": "Normal",
+                    "high": "High"
+                }
+            },
+            "brew_milk": {
+                "name": "Brew milk",
+                "state": { "factory_default": "Factory default" }
+            },
+            "brew_milk_foam": {
+                "name": "Brew milk foam",
+                "state": { "factory_default": "Factory default" }
+            },
+            "brew_preselection": {
+                "name": "Brew preselection",
+                "state": {
+                    "factory_default": "Factory default",
+                    "coldbrew": "Cold Brew",
+                    "double": "Double",
+                    "fakesweetfoam": "Sweet Foam",
+                    "lightbrew": "Light Brew",
+                    "powder": "Ground Coffee",
+                    "strongcoldbrew": "Strong Cold Brew",
+                    "sweetfoam": "Sweet Foam",
+                    "xtrashot": "Extra Shot"
+                }
+            }
+        },
+        "button": {
+            "brew": {
+                "name": "Brew"
             }
         },
         "number": {

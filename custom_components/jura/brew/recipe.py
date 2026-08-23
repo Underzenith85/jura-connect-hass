@@ -6,15 +6,15 @@ from collections.abc import Mapping
 
 from jura_connect import MachineProfile, ProductDef
 
-PRESELECTION_LABELS: dict[str, str] = {
-    "coldbrew": "Cold Brew",
-    "double": "Double",
-    "fakesweetfoam": "Sweet Foam",
-    "lightbrew": "Light Brew",
-    "powder": "Ground Coffee",
-    "strongcoldbrew": "Strong Cold Brew",
-    "sweetfoam": "Sweet Foam",
-    "xtrashot": "Extra Shot",
+PRESELECTION_TRANSLATION_KEYS = {
+    "coldbrew",
+    "double",
+    "fakesweetfoam",
+    "lightbrew",
+    "powder",
+    "strongcoldbrew",
+    "sweetfoam",
+    "xtrashot",
 }
 
 
@@ -31,7 +31,10 @@ def encodable_preselections(profile: MachineProfile, product: ProductDef) -> dic
             profile.plan_preselections(product, [name])
         except ValueError:
             continue
-        result[name] = PRESELECTION_LABELS.get(name, name.replace("_", " ").title())
+        # Known values stay stable so Home Assistant can translate them via
+        # entity.select.brew_preselection.state. Unknown future profile values
+        # still get a readable fallback instead of leaking snake_case.
+        result[name] = name if name in PRESELECTION_TRANSLATION_KEYS else name.replace("_", " ").title()
     return result
 
 
