@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
+import dataclasses
 from unittest.mock import MagicMock
 
 from custom_components.jura.binary_sensor import AlertBinarySensor, ConnectivityBinarySensor
 from custom_components.jura.const import ALERT_BINARY_SENSORS
+from custom_components.jura.coordinator import HANDSHAKE_STATE_OFFLINE
 from homeassistant.const import EntityCategory
 
 
 def _coordinator(snapshot):
     c = MagicMock()
     c.data = snapshot
+    c.last_update_success = True
     return c
 
 
@@ -27,6 +30,20 @@ def test_alert_is_off_when_not_in_active_alerts(sample_snapshot, fake_config_ent
 
 def test_alert_returns_none_without_data(fake_config_entry):
     sensor = AlertBinarySensor(_coordinator(None), fake_config_entry, "fill_water", "problem")
+    assert sensor.is_on is None
+
+
+def test_active_alert_becomes_unknown_when_machine_is_offline(sample_snapshot, fake_config_entry):
+    """A retained last-known alert must not keep notifying after shutdown."""
+    offline = dataclasses.replace(
+        sample_snapshot,
+        handshake_state=HANDSHAKE_STATE_OFFLINE,
+        active_alerts=("fill_water",),
+    )
+    sensor = AlertBinarySensor(_coordinator(offline), fake_config_entry, "fill_water", "problem")
+
+    assert "fill_water" in offline.active_alerts
+    assert sensor.available is True
     assert sensor.is_on is None
 
 
