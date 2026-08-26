@@ -60,6 +60,12 @@ class AlertBinarySensor(JuraEntity, BinarySensorEntity):
         snapshot = self.coordinator.data
         if snapshot is None:
             return None
+        # The coordinator intentionally retains the last good snapshot when
+        # the machine powers down. Do not retain an actionable alert as `on`
+        # with it: there is no live machine state capable of confirming or
+        # clearing the condition, so Home Assistant should render `unknown`.
+        if not self.coordinator.last_update_success or snapshot.handshake_state == HANDSHAKE_STATE_OFFLINE:
+            return None
         return self._alert in snapshot.active_alerts
 
 
