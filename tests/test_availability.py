@@ -43,11 +43,11 @@ def test_sensors_stay_available_when_poll_fails(sample_snapshot, fake_config_ent
     assert percent.native_value == 80
 
 
-def test_alert_binary_sensors_stay_available_when_poll_fails(sample_snapshot, fake_config_entry):
+def test_alert_binary_sensors_become_unknown_when_poll_fails(sample_snapshot, fake_config_entry):
     coordinator = _coordinator(data=sample_snapshot, last_update_success=False)
     sensor = AlertBinarySensor(coordinator, fake_config_entry, "heating_up", "running")
     assert sensor.available is True
-    assert sensor.is_on is True
+    assert sensor.is_on is None
 
 
 def test_entities_unavailable_only_before_first_successful_update(fake_config_entry):
