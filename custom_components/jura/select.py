@@ -41,6 +41,7 @@ from .brew import encodable_preselections
 from .const import CONF_MACHINE_TYPE, DOMAIN
 from .coordinator import JuraCoordinator
 from .entity import JuraEntity
+from .localization import SETTING_TRANSLATION_KEYS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,99 +51,6 @@ SELECT_KINDS = {"switch", "combobox", "item_slider"}
 # product's XML/factory default value". This is NOT "use the machine's own
 # stored setting": JURA WiFi exposes no such mechanism.
 FACTORY_DEFAULT = "factory_default"
-
-# Product identifiers covered by entity.select.brew_product.state. Keep the
-# wire/profile identifier as the select value; Home Assistant renders the
-# localized label. This catalog is intentionally checked against every profile
-# bundled with jura_connect so new identifiers cannot silently bypass i18n.
-BREW_PRODUCT_TRANSLATION_KEYS = {
-    "1_coffee_special",
-    "1_cortado",
-    "1_flat_white",
-    "1_hotwater_portion_green_tea",
-    "2_americano",
-    "2_barista_lungo",
-    "2_cafe_barista",
-    "2_cappuccini",
-    "2_cappuccino",
-    "2_coffee",
-    "2_coffee_special",
-    "2_coffee_speed_1",
-    "2_coffee_speed_2",
-    "2_cortado",
-    "2_espressi",
-    "2_espresso",
-    "2_espresso_macchiati",
-    "2_espresso_macchiato",
-    "2_flat_white",
-    "2_latte_macchiati",
-    "2_latte_macchiato",
-    "2_long_black",
-    "2_lungo",
-    "2_milk",
-    "2_milk_foam",
-    "2_milk_portion",
-    "2_milkcoffee",
-    "2_portion_milk",
-    "2_ristretti",
-    "2_ristretti_only_joe",
-    "2x_americano",
-    "2x_cappuccino",
-    "2x_coffee",
-    "2x_cortado",
-    "2x_espresso",
-    "2x_flat_white",
-    "2x_latte_macchiato",
-    "2x_lungo",
-    "2x_milk",
-    "2x_milk_foam",
-    "2x_milkcoffee",
-    "americano",
-    "barista_lungo",
-    "barista_lungo_joe_only",
-    "barista_lungo_only_joe",
-    "cafe_barista",
-    "cafe_barista_americano",
-    "cafe_barista_joe_only",
-    "cafe_barista_only_joe",
-    "cappuccino",
-    "cappuccino_big",
-    "chocolate_milkfoam",
-    "coffee",
-    "coffee_big",
-    "coffee_special",
-    "coffee_speed_1",
-    "coffee_speed_2",
-    "cortado",
-    "espresso",
-    "espresso_big",
-    "flat_white",
-    "espresso_doppio",
-    "espresso_doppio_only_joe",
-    "espresso_macchiato",
-    "hotwater_portion",
-    "hotwater_portion_big",
-    "hotwater_portion_black_tea",
-    "hotwater_portion_green_tea",
-    "hotwater_portion_normal",
-    "latte_macchiato",
-    "latte_macchiato_big",
-    "long_black",
-    "lungo",
-    "milk",
-    "milk_big",
-    "milk_foam",
-    "milk_portion",
-    "milkcoffee",
-    "milkcoffee_big",
-    "mocaccino",
-    "pot",
-    "pot_2_speed",
-    "powderproduct",
-    "ristretto",
-    "ristretto_only_joe",
-    "sweet_latte",
-}
 
 
 async def async_setup_entry(
@@ -225,12 +133,11 @@ class SettingSelectEntity(JuraEntity, SelectEntity):
     def __init__(self, coordinator: JuraCoordinator, config_entry: ConfigEntry, setting_def) -> None:
         super().__init__(coordinator, config_entry)
         self._setting = setting_def
-        # Setting names come from the machine profile, not a fixed enum, so
-        # only the "Setting" prefix is localisable: HA renders
-        # entity.select.setting.name ("Setting {setting}") and fills the
-        # placeholder with the profile setting name.
-        self._attr_translation_key = "setting"
-        self._attr_translation_placeholders = {"setting": setting_def.name.replace("_", " ")}
+        if setting_def.name in SETTING_TRANSLATION_KEYS:
+            self._attr_translation_key = f"setting_{setting_def.name}"
+        else:
+            self._attr_translation_key = "setting"
+            self._attr_translation_placeholders = {"setting": setting_def.name.replace("_", " ")}
         self._attr_unique_id = f"{DOMAIN}_{self._slug}_setting_{setting_def.name}"
         self._attr_options = [item.name for item in setting_def.items]
 

@@ -151,6 +151,12 @@ def test_brew_counter_uses_placeholder_for_product(sample_snapshot, fake_config_
     assert s._attr_translation_placeholders == {"product": "double espresso"}
 
 
+def test_known_brew_counter_uses_localized_product_key(sample_snapshot, fake_config_entry):
+    s = BrewCounterSensor(_make_coordinator(sample_snapshot), fake_config_entry, "espresso")
+    assert s._attr_translation_key == "brew_counter_espresso"
+    assert not hasattr(s, "_attr_translation_placeholders")
+
+
 def test_brew_total_uses_brew_total_translation_key(sample_snapshot, fake_config_entry):
     s = BrewTotalSensor(_make_coordinator(sample_snapshot), fake_config_entry)
     assert s.entity_category is None

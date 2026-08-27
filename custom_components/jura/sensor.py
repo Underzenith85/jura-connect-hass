@@ -22,6 +22,7 @@ from .const import (
 )
 from .coordinator import HANDSHAKE_STATE_OFFLINE, JuraCoordinator
 from .entity import JuraEntity
+from .localization import BREW_PRODUCT_TRANSLATION_KEYS
 from .serializers import percent_value, serialize_snapshot
 
 
@@ -200,12 +201,11 @@ class BrewCounterSensor(JuraEntity, SensorEntity):
     ) -> None:
         super().__init__(coordinator, config_entry)
         self._product = product_name
-        # Product names are machine data, not a fixed enum, so the
-        # localisable part is only the "Brew" prefix: HA renders
-        # entity.sensor.brew_counter.name ("Brew {product}") and fills the
-        # placeholder with the raw recipe name.
-        self._attr_translation_key = "brew_counter"
-        self._attr_translation_placeholders = {"product": product_name.replace("_", " ")}
+        if product_name in BREW_PRODUCT_TRANSLATION_KEYS:
+            self._attr_translation_key = f"brew_counter_{product_name}"
+        else:
+            self._attr_translation_key = "brew_counter"
+            self._attr_translation_placeholders = {"product": product_name.replace("_", " ")}
         self._attr_unique_id = f"{DOMAIN}_{self._slug}_brews_{product_name}"
 
     @property

@@ -82,6 +82,264 @@
             },
             "percent_descale": {
                 "name": "Entkalkungsstand"
+            },
+            "brew_counter_1_coffee_special": {
+                "name": "Bezüge: Kaffeespezialität"
+            },
+            "brew_counter_1_cortado": {
+                "name": "Bezüge: Cortado"
+            },
+            "brew_counter_1_flat_white": {
+                "name": "Bezüge: Flat White"
+            },
+            "brew_counter_1_hotwater_portion_green_tea": {
+                "name": "Bezüge: Heißwasser für Grüntee"
+            },
+            "brew_counter_2_americano": {
+                "name": "Bezüge: Zwei Americanos"
+            },
+            "brew_counter_2_barista_lungo": {
+                "name": "Bezüge: Zwei Lungo Barista"
+            },
+            "brew_counter_2_cafe_barista": {
+                "name": "Bezüge: Zwei Americanos"
+            },
+            "brew_counter_2_cappuccini": {
+                "name": "Bezüge: Zwei Cappuccinos"
+            },
+            "brew_counter_2_cappuccino": {
+                "name": "Bezüge: Zwei Cappuccinos"
+            },
+            "brew_counter_2_coffee": {
+                "name": "Bezüge: Zwei Kaffee"
+            },
+            "brew_counter_2_coffee_special": {
+                "name": "Bezüge: Zwei Kaffeespezialitäten"
+            },
+            "brew_counter_2_coffee_speed_1": {
+                "name": "Bezüge: Zwei Kaffee (Geschwindigkeit 1)"
+            },
+            "brew_counter_2_coffee_speed_2": {
+                "name": "Bezüge: Zwei Kaffee (Geschwindigkeit 2)"
+            },
+            "brew_counter_2_cortado": {
+                "name": "Bezüge: Zwei Cortados"
+            },
+            "brew_counter_2_espressi": {
+                "name": "Bezüge: Zwei Espressi"
+            },
+            "brew_counter_2_espresso": {
+                "name": "Bezüge: Zwei Espressi"
+            },
+            "brew_counter_2_espresso_macchiati": {
+                "name": "Bezüge: Zwei Espresso macchiato"
+            },
+            "brew_counter_2_espresso_macchiato": {
+                "name": "Bezüge: Zwei Espresso macchiato"
+            },
+            "brew_counter_2_flat_white": {
+                "name": "Bezüge: Zwei Flat White"
+            },
+            "brew_counter_2_latte_macchiati": {
+                "name": "Bezüge: Zwei Latte macchiato"
+            },
+            "brew_counter_2_latte_macchiato": {
+                "name": "Bezüge: Zwei Latte macchiato"
+            },
+            "brew_counter_2_long_black": {
+                "name": "Bezüge: Zwei Long Black"
+            },
+            "brew_counter_2_lungo": {
+                "name": "Bezüge: Zwei Lungo"
+            },
+            "brew_counter_2_milk": {
+                "name": "Bezüge: Zwei Milchportionen"
+            },
+            "brew_counter_2_milk_foam": {
+                "name": "Bezüge: Zwei Milchschaumportionen"
+            },
+            "brew_counter_2_milk_portion": {
+                "name": "Bezüge: Zwei Milchportionen"
+            },
+            "brew_counter_2_milkcoffee": {
+                "name": "Bezüge: Zwei Milchkaffee"
+            },
+            "brew_counter_2_portion_milk": {
+                "name": "Bezüge: Zwei Milchportionen"
+            },
+            "brew_counter_2_ristretti": {
+                "name": "Bezüge: Zwei Ristretti"
+            },
+            "brew_counter_2_ristretti_only_joe": {
+                "name": "Bezüge: Zwei Ristretti (nur J.O.E.)"
+            },
+            "brew_counter_2x_americano": {
+                "name": "Bezüge: Zwei Americanos"
+            },
+            "brew_counter_2x_cappuccino": {
+                "name": "Bezüge: Zwei Cappuccinos"
+            },
+            "brew_counter_2x_coffee": {
+                "name": "Bezüge: Zwei Kaffee"
+            },
+            "brew_counter_2x_cortado": {
+                "name": "Bezüge: Zwei Cortados"
+            },
+            "brew_counter_2x_espresso": {
+                "name": "Bezüge: Zwei Espressi"
+            },
+            "brew_counter_2x_flat_white": {
+                "name": "Bezüge: Zwei Flat White"
+            },
+            "brew_counter_2x_latte_macchiato": {
+                "name": "Bezüge: Zwei Latte macchiato"
+            },
+            "brew_counter_2x_lungo": {
+                "name": "Bezüge: Zwei Lungo"
+            },
+            "brew_counter_2x_milk": {
+                "name": "Bezüge: Zwei Milchportionen"
+            },
+            "brew_counter_2x_milk_foam": {
+                "name": "Bezüge: Zwei Milchschaumportionen"
+            },
+            "brew_counter_2x_milkcoffee": {
+                "name": "Bezüge: Zwei Milchkaffee"
+            },
+            "brew_counter_americano": {
+                "name": "Bezüge: Americano"
+            },
+            "brew_counter_barista_lungo": {
+                "name": "Bezüge: Lungo Barista"
+            },
+            "brew_counter_barista_lungo_joe_only": {
+                "name": "Bezüge: Lungo Barista (nur J.O.E.)"
+            },
+            "brew_counter_barista_lungo_only_joe": {
+                "name": "Bezüge: Lungo Barista (nur J.O.E.)"
+            },
+            "brew_counter_cafe_barista": {
+                "name": "Bezüge: Americano"
+            },
+            "brew_counter_cafe_barista_americano": {
+                "name": "Bezüge: Americano"
+            },
+            "brew_counter_cafe_barista_joe_only": {
+                "name": "Bezüge: Americano (nur J.O.E.)"
+            },
+            "brew_counter_cafe_barista_only_joe": {
+                "name": "Bezüge: Americano (nur J.O.E.)"
+            },
+            "brew_counter_cappuccino": {
+                "name": "Bezüge: Cappuccino"
+            },
+            "brew_counter_cappuccino_big": {
+                "name": "Bezüge: Großer Cappuccino"
+            },
+            "brew_counter_chocolate_milkfoam": {
+                "name": "Bezüge: Schokoladen-Milchschaum"
+            },
+            "brew_counter_coffee": {
+                "name": "Bezüge: Kaffee"
+            },
+            "brew_counter_coffee_big": {
+                "name": "Bezüge: Großer Kaffee"
+            },
+            "brew_counter_coffee_special": {
+                "name": "Bezüge: Kaffeespezialität"
+            },
+            "brew_counter_coffee_speed_1": {
+                "name": "Bezüge: Kaffee (Geschwindigkeit 1)"
+            },
+            "brew_counter_coffee_speed_2": {
+                "name": "Bezüge: Kaffee (Geschwindigkeit 2)"
+            },
+            "brew_counter_cortado": {
+                "name": "Bezüge: Cortado"
+            },
+            "brew_counter_espresso": {
+                "name": "Bezüge: Espresso"
+            },
+            "brew_counter_espresso_big": {
+                "name": "Bezüge: Großer Espresso"
+            },
+            "brew_counter_espresso_doppio": {
+                "name": "Bezüge: Espresso doppio"
+            },
+            "brew_counter_espresso_doppio_only_joe": {
+                "name": "Bezüge: Espresso doppio (nur J.O.E.)"
+            },
+            "brew_counter_espresso_macchiato": {
+                "name": "Bezüge: Espresso macchiato"
+            },
+            "brew_counter_flat_white": {
+                "name": "Bezüge: Flat White"
+            },
+            "brew_counter_hotwater_portion": {
+                "name": "Bezüge: Heißwasser"
+            },
+            "brew_counter_hotwater_portion_big": {
+                "name": "Bezüge: Große Heißwasserportion"
+            },
+            "brew_counter_hotwater_portion_black_tea": {
+                "name": "Bezüge: Heißwasser für Schwarztee"
+            },
+            "brew_counter_hotwater_portion_green_tea": {
+                "name": "Bezüge: Heißwasser für Grüntee"
+            },
+            "brew_counter_hotwater_portion_normal": {
+                "name": "Bezüge: Heißwasser"
+            },
+            "brew_counter_latte_macchiato": {
+                "name": "Bezüge: Latte macchiato"
+            },
+            "brew_counter_latte_macchiato_big": {
+                "name": "Bezüge: Großer Latte macchiato"
+            },
+            "brew_counter_long_black": {
+                "name": "Bezüge: Long black"
+            },
+            "brew_counter_lungo": {
+                "name": "Bezüge: Lungo"
+            },
+            "brew_counter_milk": {
+                "name": "Bezüge: Milch"
+            },
+            "brew_counter_milk_big": {
+                "name": "Bezüge: Große Milchportion"
+            },
+            "brew_counter_milk_foam": {
+                "name": "Bezüge: Milchschaum"
+            },
+            "brew_counter_milk_portion": {
+                "name": "Bezüge: Milchportion"
+            },
+            "brew_counter_milkcoffee": {
+                "name": "Bezüge: Milchkaffee"
+            },
+            "brew_counter_milkcoffee_big": {
+                "name": "Bezüge: Großer Milchkaffee"
+            },
+            "brew_counter_mocaccino": {
+                "name": "Bezüge: Mocaccino"
+            },
+            "brew_counter_pot": {
+                "name": "Bezüge: Kännchen Kaffee"
+            },
+            "brew_counter_pot_2_speed": {
+                "name": "Bezüge: Kännchen Kaffee (Geschwindigkeit 2)"
+            },
+            "brew_counter_powderproduct": {
+                "name": "Bezüge: Gemahlener Kaffee"
+            },
+            "brew_counter_ristretto": {
+                "name": "Bezüge: Ristretto"
+            },
+            "brew_counter_ristretto_only_joe": {
+                "name": "Bezüge: Ristretto (nur J.O.E.)"
+            },
+            "brew_counter_sweet_latte": {
+                "name": "Bezüge: Sweet Latte"
             }
         },
         "binary_sensor": {
@@ -347,6 +605,163 @@
                     "sweetfoam": "Sweet Foam",
                     "xtrashot": "Extra Shot"
                 }
+            },
+            "setting_aroma_control_instructions": {
+                "name": "Hinweise zur Aromakontrolle",
+                "state": {
+                    "active": "Aktiv",
+                    "inactive": "Inaktiv"
+                }
+            },
+            "setting_auto_off": {
+                "name": "Automatische Ausschaltung",
+                "state": {
+                    "15min": "15 Minuten",
+                    "30min": "30 Minuten",
+                    "1h": "1 Stunde",
+                    "2h": "2 Stunden",
+                    "3h": "3 Stunden",
+                    "4h": "4 Stunden",
+                    "5h": "5 Stunden",
+                    "6h": "6 Stunden",
+                    "7h": "7 Stunden",
+                    "8h": "8 Stunden",
+                    "9h": "9 Stunden"
+                }
+            },
+            "setting_brewing_mode": {
+                "name": "Zubereitungsmodus",
+                "state": {
+                    "ask": "Nachfragen",
+                    "classic": "Klassisch",
+                    "cold": "Kalt",
+                    "light": "Leicht",
+                    "profile1": "Profil 1",
+                    "profile2": "Profil 2",
+                    "profile3": "Profil 3",
+                    "profile4": "Profil 4",
+                    "sweet": "Süß"
+                }
+            },
+            "setting_coffee_eye": {
+                "name": "Coffee Eye",
+                "state": {
+                    "off": "Aus",
+                    "on": "Ein"
+                }
+            },
+            "setting_display_brightness_setting": {
+                "name": "Displayhelligkeit",
+                "state": {
+                    "10": "10",
+                    "20": "20",
+                    "30": "30",
+                    "40": "40",
+                    "50": "50",
+                    "60": "60",
+                    "70": "70",
+                    "80": "80",
+                    "90": "90",
+                    "100": "100"
+                }
+            },
+            "setting_easy_mode": {
+                "name": "Easy Mode",
+                "state": {
+                    "caffeine_regulator": "Koffeinregler",
+                    "coffee_strength": "Kaffeestärke"
+                }
+            },
+            "setting_esm": {
+                "name": "Energiesparmodus",
+                "state": {
+                    "active": "Aktiv",
+                    "inactive": "Inaktiv"
+                }
+            },
+            "setting_frother_instructions": {
+                "name": "Hinweise zum Milchaufschäumer",
+                "state": {
+                    "off": "Aus",
+                    "on": "Ein"
+                }
+            },
+            "setting_grinder_instructions": {
+                "name": "Hinweise zum Mahlwerk",
+                "state": {
+                    "off": "Aus",
+                    "on": "Ein"
+                }
+            },
+            "setting_hardness": {
+                "name": "Wasserhärte",
+                "state": {
+                    "step_1": "Stufe 1",
+                    "step_2": "Stufe 2",
+                    "step_3": "Stufe 3",
+                    "step_4": "Stufe 4"
+                }
+            },
+            "setting_language": {
+                "name": "Sprache",
+                "state": {
+                    "chinese": "Chinesisch",
+                    "czech": "Tschechisch",
+                    "dutch": "Niederländisch",
+                    "english": "Englisch",
+                    "esti": "Estnisch",
+                    "french": "Französisch",
+                    "german": "Deutsch",
+                    "hollandisch": "Niederländisch",
+                    "italian": "Italienisch",
+                    "polish": "Polnisch",
+                    "portuguese": "Portugiesisch",
+                    "russian": "Russisch",
+                    "spanish": "Spanisch",
+                    "swedish": "Schwedisch"
+                }
+            },
+            "setting_milk_rinsing": {
+                "name": "Milchsystem-Spülung",
+                "state": {
+                    "automatic": "Automatisch",
+                    "manual": "Manuell"
+                }
+            },
+            "setting_operating_instructions": {
+                "name": "Bedienhinweise",
+                "state": {
+                    "active": "Aktiv",
+                    "inactive": "Inaktiv"
+                }
+            },
+            "setting_quality_assistant": {
+                "name": "Quality Assistant",
+                "state": {
+                    "active": "Aktiv",
+                    "inactive": "Inaktiv"
+                }
+            },
+            "setting_sweet_foam_instructions": {
+                "name": "Hinweise zu Sweet Foam",
+                "state": {
+                    "off": "Aus",
+                    "on": "Ein"
+                }
+            },
+            "setting_time_format": {
+                "name": "Zeitformat",
+                "state": {
+                    "24_hour": "24 Stunden",
+                    "am_pm": "12 Stunden"
+                }
+            },
+            "setting_units": {
+                "name": "Einheiten",
+                "state": {
+                    "ml": "Milliliter",
+                    "oz": "Unzen"
+                }
             }
         },
         "button": {
@@ -357,6 +772,9 @@
         "number": {
             "setting": {
                 "name": "Einstellung {setting}"
+            },
+            "setting_hardness": {
+                "name": "Wasserhärte"
             }
         }
     }
