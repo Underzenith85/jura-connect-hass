@@ -53,6 +53,17 @@ def test_select_entity_uses_setting_placeholder(ef1091, sample_snapshot, fake_co
     assert entity._attr_translation_placeholders == {"setting": "language"}
 
 
+def test_setting_controls_unavailable_when_machine_is_offline(ef1091, sample_snapshot, fake_config_entry):
+    coordinator = _coordinator(sample_snapshot)
+    select = SettingSelectEntity(coordinator, fake_config_entry, _setting_by_name(ef1091, "language"))
+    number = SettingNumberEntity(coordinator, fake_config_entry, _setting_by_name(ef1091, "hardness"))
+
+    coordinator.last_update_success = False
+
+    assert select.available is False
+    assert number.available is False
+
+
 def test_number_entity_uses_setting_placeholder(ef1091, sample_snapshot, fake_config_entry):
     hardness = _setting_by_name(ef1091, "hardness")
     entity = SettingNumberEntity(_coordinator(sample_snapshot), fake_config_entry, hardness)

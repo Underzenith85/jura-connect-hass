@@ -70,7 +70,7 @@ class JuraBrewButton(JuraEntity, ButtonEntity):
 
     @property
     def available(self) -> bool:
-        return self.coordinator.selected_product() is not None
+        return self.machine_online and self.coordinator.selected_product() is not None
 
     async def async_press(self) -> None:
         product = self.coordinator.selected_product()
