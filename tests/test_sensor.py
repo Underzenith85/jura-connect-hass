@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 
 from custom_components.jura import sensor as jura_sensor
 from custom_components.jura.const import COUNTER_KEYS, DOMAIN, PERCENT_KEYS, STATE_IDLE, STATE_UNKNOWN, STATUS_STATES
+from custom_components.jura.coordinator import HANDSHAKE_STATE_OFFLINE
 from custom_components.jura.sensor import (
     BrewCounterSensor,
     BrewTotalSensor,
@@ -22,6 +23,7 @@ from homeassistant.const import EntityCategory
 def _make_coordinator(snapshot):
     coordinator = MagicMock()
     coordinator.data = snapshot
+    coordinator.last_update_success = True
     return coordinator
 
 
@@ -57,6 +59,23 @@ def test_state_sensor_none_without_data(fake_config_entry):
     sensor = StateSensor(_make_coordinator(None), fake_config_entry)
     assert sensor.native_value is None
     assert sensor.extra_state_attributes == {}
+
+
+def test_state_sensor_unknown_for_offline_snapshot(fake_config_entry, sample_snapshot):
+    offline = replace(sample_snapshot, handshake_state=HANDSHAKE_STATE_OFFLINE)
+    sensor = StateSensor(_make_coordinator(offline), fake_config_entry)
+
+    assert sensor.available is True
+    assert sensor.native_value is None
+
+
+def test_state_sensor_unknown_after_failed_update(fake_config_entry, sample_snapshot):
+    coordinator = _make_coordinator(sample_snapshot)
+    coordinator.last_update_success = False
+    sensor = StateSensor(coordinator, fake_config_entry)
+
+    assert sensor.available is True
+    assert sensor.native_value is None
 
 
 def test_state_sensor_attributes_include_snapshot(sample_snapshot, fake_config_entry):
