@@ -10,6 +10,7 @@ in every language so HA can substitute the machine-supplied value.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -135,6 +136,56 @@ def test_german_actually_translates(strings, de):
 
 def test_strings_and_en_mirror_match(strings, en):
     assert strings["entity"] == en["entity"]
+    assert strings["config"] == en["config"]
+    assert strings["services"] == en["services"]
+
+
+def _structure(value):
+    if isinstance(value, dict):
+        return {key: _structure(child) for key, child in value.items()}
+    return type(value).__name__
+
+
+def _placeholders(value):
+    if isinstance(value, dict):
+        return {key: _placeholders(child) for key, child in value.items()}
+    return set(re.findall(r"{[^{}]+}", value)) if isinstance(value, str) else set()
+
+
+def test_config_and_service_catalog_structure_matches_english(strings, de):
+    assert _structure(de["config"]) == _structure(strings["config"])
+    assert _structure(de["services"]) == _structure(strings["services"])
+
+
+def test_config_and_service_placeholders_are_preserved(strings, de):
+    assert _placeholders(de["config"]) == _placeholders(strings["config"])
+    assert _placeholders(de["services"]) == _placeholders(strings["services"])
+
+
+def test_german_config_and_services_are_translated(strings, de):
+    assert de["config"]["step"]["manual"]["title"] == "Manuelle Einrichtung"
+    assert de["services"]["brew"]["name"] == "Getränk zubereiten"
+
+
+@pytest.mark.parametrize("catalog_name", ["strings.json", "translations/en.json", "translations/de.json"])
+def test_service_catalog_covers_services_yaml(catalog_name):
+    definitions: dict[str, set[str]] = {}
+    current_service = None
+    in_fields = False
+    for line in (_COMPONENT / "services.yaml").read_text(encoding="utf-8").splitlines():
+        if line and not line.startswith(" ") and line.endswith(":"):
+            current_service = line[:-1]
+            definitions[current_service] = set()
+            in_fields = False
+        elif line == "  fields:":
+            in_fields = True
+        elif in_fields and line.startswith("    ") and not line.startswith("      ") and line.endswith(":"):
+            assert current_service is not None
+            definitions[current_service].add(line.strip()[:-1])
+    translated = _load(catalog_name)["services"]
+    assert set(translated) == set(definitions)
+    for service, fields in definitions.items():
+        assert set(translated[service].get("fields", {})) == fields
 
 
 @pytest.mark.parametrize("catalog_name", ["strings.json", "translations/en.json", "translations/de.json"])
