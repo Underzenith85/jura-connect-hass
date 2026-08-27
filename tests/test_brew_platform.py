@@ -33,6 +33,7 @@ from jura_connect import (  # noqa: E402
 )
 
 from custom_components.jura.button import JuraBrewButton  # noqa: E402
+from custom_components.jura.backends.base import MachineSnapshot  # noqa: E402
 from custom_components.jura.const import (  # noqa: E402
     CONF_AUTH_HASH,
     CONF_CONN_ID,
@@ -87,7 +88,12 @@ def _coordinator(entry: ConfigEntry | None = None) -> JuraCoordinator:
     backend = AsyncMock()
     coordinator = JuraCoordinator(AsyncMock(), entry, backend=backend)
     coordinator.run_command = AsyncMock(return_value={"name": "brew", "value": "ok"})
-    coordinator.data = None
+    coordinator.data = MachineSnapshot(
+        address="192.0.2.10",
+        conn_id="homeassistant-test",
+        handshake_state="CORRECT",
+        active_alerts=(),
+    )
     return coordinator
 
 
@@ -418,6 +424,20 @@ def test_button_name_and_unique_id():
     button = JuraBrewButton(coordinator, _entry())
     assert button._attr_translation_key == "brew"
     assert button.unique_id.endswith("homeassistant_test_brew")
+
+
+def test_brew_controls_unavailable_when_machine_is_offline():
+    coordinator = _coordinator()
+    entry = _entry()
+    product = BrewProductSelect(coordinator, entry)
+    strength = BrewStrengthSelect(coordinator, entry)
+    button = JuraBrewButton(coordinator, entry)
+
+    coordinator.last_update_success = False
+
+    assert product.available is False
+    assert strength.available is False
+    assert button.available is False
 
 
 async def test_button_press_espresso_factory_default_vector():

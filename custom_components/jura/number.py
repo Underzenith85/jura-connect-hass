@@ -67,6 +67,10 @@ class SettingNumberEntity(JuraEntity, NumberEntity):
         self._attr_native_step = float(setting_def.step or 1)
 
     @property
+    def available(self) -> bool:
+        return self.machine_online
+
+    @property
     def native_value(self) -> float | None:
         snapshot = self.coordinator.data
         if snapshot is None:

@@ -8,7 +8,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_CONN_ID, CONF_HOST, DOMAIN
-from .coordinator import JuraCoordinator
+from .coordinator import HANDSHAKE_STATE_OFFLINE, JuraCoordinator
 
 
 class JuraEntity(CoordinatorEntity[JuraCoordinator]):
@@ -39,3 +39,13 @@ class JuraEntity(CoordinatorEntity[JuraCoordinator]):
         # instead of flipping every sensor to "unavailable" on a failed poll.
         # The connectivity binary_sensor is the canonical reachability signal.
         return self.coordinator.data is not None
+
+    @property
+    def machine_online(self) -> bool:
+        """Whether a command-capable entity can currently reach the machine."""
+        snapshot = self.coordinator.data
+        return bool(
+            self.coordinator.last_update_success
+            and snapshot is not None
+            and snapshot.handshake_state != HANDSHAKE_STATE_OFFLINE
+        )

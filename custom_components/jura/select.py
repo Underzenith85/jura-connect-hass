@@ -175,6 +175,10 @@ class SettingSelectEntity(JuraEntity, SelectEntity):
         self._attr_options = [item.name for item in setting_def.items]
 
     @property
+    def available(self) -> bool:
+        return self.machine_online
+
+    @property
     def current_option(self) -> str | None:
         snapshot = self.coordinator.data
         if snapshot is None:
@@ -218,7 +222,7 @@ class BrewProductSelect(JuraEntity, SelectEntity):
 
     @property
     def available(self) -> bool:
-        return bool(self.options)
+        return self.machine_online and bool(self.options)
 
     @property
     def current_option(self) -> str | None:
@@ -268,7 +272,7 @@ class _BrewParamSelect(JuraEntity, SelectEntity):
 
     @property
     def available(self) -> bool:
-        return self._param() is not None
+        return self.machine_online and self._param() is not None
 
     @property
     def options(self) -> list[str]:
@@ -428,7 +432,7 @@ class BrewPreselectionSelect(JuraEntity, SelectEntity):
 
     @property
     def available(self) -> bool:
-        return bool(self._choices())
+        return self.machine_online and bool(self._choices())
 
     @property
     def options(self) -> list[str]:
