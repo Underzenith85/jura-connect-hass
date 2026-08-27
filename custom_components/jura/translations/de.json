@@ -777,5 +777,232 @@
                 "name": "Wasserhärte"
             }
         }
+    },
+    "config": {
+        "step": {
+            "user": {
+                "title": "Jura Connect einrichten",
+                "description": "Wie möchtest du deine Kaffeemaschine finden?",
+                "data": {
+                    "mode": "Einrichtungsmethode"
+                }
+            },
+            "no_machines_found": {
+                "title": "Keine Maschinen gefunden",
+                "description": "In deinem Netzwerk wurden keine Jura-Kaffeemaschinen erkannt. Stelle sicher, dass die Maschine eingeschaltet und mit demselben WLAN wie Home Assistant verbunden ist. Klicke auf Senden, um die IP-Adresse manuell einzugeben."
+            },
+            "select": {
+                "title": "Maschine auswählen",
+                "description": "Diese Maschinen wurden in deinem Netzwerk erkannt:",
+                "data": {
+                    "address": "Maschine"
+                }
+            },
+            "manual": {
+                "title": "Manuelle Einrichtung",
+                "description": "Gib die IP-Adresse deiner Kaffeemaschine ein. Der WLAN-Dongle verwendet standardmäßig TCP-Port 51515. Lass die PIN leer, sofern du an der Maschine keine festgelegt hast.",
+                "data": {
+                    "host": "IP-Adresse",
+                    "port": "TCP-Port",
+                    "pin": "PIN am Bedienfeld",
+                    "conn_id": "Verbindungsname"
+                }
+            },
+            "pair_failed": {
+                "title": "Kopplung fehlgeschlagen",
+                "description": "Die Kopplung mit der Maschine unter {host} ist fehlgeschlagen.\n\nDetails: {error}\n\nKlicke auf Senden, um es erneut zu versuchen."
+            },
+            "machine_type": {
+                "title": "Jura-Modell auswählen",
+                "description": "Mit dem richtigen Modell kann Home Assistant Bezugszähler und Statusmeldungen anhand der Produkttabelle deiner Maschine benennen. Automatisch erkannt: {detected}.\n\nWähle „Basisprofil verwenden (kein Profil)“, falls deine Maschine nicht aufgeführt ist. Die Integration verwendet dann die allgemeine EF536-Zuordnung.",
+                "data": {
+                    "machine_type": "Modell"
+                }
+            }
+        },
+        "progress": {
+            "discovering": "Jura-Kaffeemaschinen werden in deinem Netzwerk gesucht. Dies dauert bis zu 5 Sekunden.",
+            "pairing": "Verbindung mit {host} wird hergestellt.\n\nGehe zu deiner Kaffeemaschine und drücke bei der „Connect“-Abfrage OK.\n\nEs wird bis zu 60 Sekunden gewartet."
+        },
+        "error": {
+            "cannot_connect": "Die Maschine konnte nicht erreicht werden. Prüfe Stromversorgung, Netzwerk und IP-Adresse.",
+            "pairing_timeout": "Die Maschine hat die Verbindung nicht innerhalb von 60 Sekunden angenommen. Drücke bei der Aufforderung OK und versuche es erneut.",
+            "pairing_aborted": "Die Kopplung wurde an der Maschine abgelehnt. Versuche es erneut und drücke OK.",
+            "pairing_rejected": "Die Maschine hat die Kopplungsanfrage abgelehnt. Prüfe, ob sie eingeschaltet und erreichbar ist.",
+            "wrong_pin": "Die Maschine benötigt eine PIN oder die angegebene PIN ist falsch. Gib bei der manuellen Einrichtung die richtige PIN ein.",
+            "wrong_hash": "Die gespeicherten Zugangsdaten sind ungültig. Entferne die Integration und füge sie erneut hinzu.",
+            "unknown": "Unerwarteter Fehler während der Kopplung."
+        },
+        "abort": {
+            "already_configured": "Diese Maschine ist bereits konfiguriert."
+        }
+    },
+    "services": {
+        "force_update": {
+            "name": "Aktualisierung erzwingen",
+            "description": "Die Maschine sofort abfragen.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Konfigurationseintrags-ID",
+                    "description": "Die Konfigurationseintrags-ID der Maschine (alternativ zu entity_id)."
+                },
+                "entity_id": {
+                    "name": "Entität",
+                    "description": "Eine Jura-Sensorentität (alternativ zu config_entry_id)."
+                }
+            }
+        },
+        "lock_screen": {
+            "name": "Bildschirm sperren",
+            "description": "Das Bedienfeld der Maschine sperren.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Konfigurationseintrags-ID"
+                },
+                "entity_id": {
+                    "name": "Entität"
+                }
+            }
+        },
+        "unlock_screen": {
+            "name": "Bildschirm entsperren",
+            "description": "Das Bedienfeld der Maschine entsperren.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Konfigurationseintrags-ID"
+                },
+                "entity_id": {
+                    "name": "Entität"
+                }
+            }
+        },
+        "brew": {
+            "name": "Getränk zubereiten",
+            "description": "Ein Getränk zubereiten. Wähle ein Produkt mit optionalen Anpassungen oder übergib ein Rohrezept. Dadurch bereitet die Maschine tatsächlich ein Getränk zu.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Konfigurationseintrags-ID"
+                },
+                "entity_id": {
+                    "name": "Entität"
+                },
+                "product": {
+                    "name": "Produkt",
+                    "description": "Produktname aus der Produkttabelle. Schließt recipe gegenseitig aus."
+                },
+                "strength": {
+                    "name": "Kaffeestärke",
+                    "description": "Optionale Stärkestufe; weglassen für den Werksstandard."
+                },
+                "water_ml": {
+                    "name": "Wasser",
+                    "description": "Optionale Wassermenge in Millilitern; weglassen für den Werksstandard."
+                },
+                "temperature": {
+                    "name": "Temperatur",
+                    "description": "Optionale Temperaturstufe; weglassen für den Werksstandard."
+                },
+                "milk_s": {
+                    "name": "Milch",
+                    "description": "Optionale Milchbezugszeit in Sekunden; weglassen für den Werksstandard."
+                },
+                "milk_foam_s": {
+                    "name": "Milchschaum",
+                    "description": "Optionale Milchschaumbezugszeit in Sekunden; weglassen für den Werksstandard."
+                },
+                "preselection": {
+                    "name": "Vorauswahl",
+                    "description": "Optionaler, vom Profil unterstützter Spezialmodus."
+                },
+                "recipe": {
+                    "name": "Rezept (erweitert)",
+                    "description": "Rohe Hex-Nutzdaten ohne das Präfix @TP:. Schließt product gegenseitig aus."
+                }
+            }
+        },
+        "clean": {
+            "name": "Reinigungsprogramm starten",
+            "description": "Das Reinigungsprogramm des Kaffeesystems starten.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Konfigurationseintrags-ID"
+                },
+                "entity_id": {
+                    "name": "Entität"
+                }
+            }
+        },
+        "descale": {
+            "name": "Entkalkungsprogramm starten",
+            "description": "Das Entkalkungsprogramm starten.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Konfigurationseintrags-ID"
+                },
+                "entity_id": {
+                    "name": "Entität"
+                }
+            }
+        },
+        "filter_change": {
+            "name": "Filterwechsel",
+            "description": "Den Wasserfilter wechseln.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Konfigurationseintrags-ID"
+                },
+                "entity_id": {
+                    "name": "Entität"
+                }
+            }
+        },
+        "cappu_rinse": {
+            "name": "Milchsystem spülen",
+            "description": "Das Milchsystem mit heißem Wasser spülen.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Konfigurationseintrags-ID"
+                },
+                "entity_id": {
+                    "name": "Entität"
+                }
+            }
+        },
+        "cappu_clean": {
+            "name": "Milchsystem reinigen",
+            "description": "Das Reinigungsprogramm des Milchsystems starten.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Konfigurationseintrags-ID"
+                },
+                "entity_id": {
+                    "name": "Entität"
+                }
+            }
+        },
+        "power_off": {
+            "name": "Ausschalten",
+            "description": "Die Maschine in den Standby-Modus versetzen.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Konfigurationseintrags-ID"
+                },
+                "entity_id": {
+                    "name": "Entität"
+                }
+            }
+        },
+        "restart": {
+            "name": "WLAN-Dongle neu starten",
+            "description": "Den WLAN-Dongle neu starten.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Konfigurationseintrags-ID"
+                },
+                "entity_id": {
+                    "name": "Entität"
+                }
+            }
+        }
     }
 }
