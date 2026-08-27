@@ -61,7 +61,50 @@
     "entity": {
         "sensor": {
             "status": {
-                "name": "Status"
+                "name": "Status",
+                "state": {
+                    "idle": "Idle",
+                    "fill_water": "Fill water",
+                    "fill_system": "Fill system",
+                    "fill_powder": "Fill powder",
+                    "empty_grounds": "Empty grounds",
+                    "empty_tray": "Empty tray",
+                    "insert_tray": "Insert tray",
+                    "insert_coffee_bin": "Insert coffee bin",
+                    "outlet_missing": "Outlet missing",
+                    "rear_cover_missing": "Rear cover missing",
+                    "close_powder_cover": "Close powder cover",
+                    "remove_water_tank": "Remove water tank",
+                    "error_status": "Error status",
+                    "program_mode_status": "Program mode status",
+                    "milk_alert": "Milk alert",
+                    "milk_sensor_error": "Milk sensor error",
+                    "no_milk_sensor": "No milk sensor",
+                    "milk_sensor_no_signal": "Milk sensor no signal",
+                    "filter_alert": "Filter alert",
+                    "descale_alert": "Descale alert",
+                    "cleaning_alert": "Cleaning alert",
+                    "cappu_rinse_alert": "Cappu rinse alert",
+                    "heating_up": "Heating up",
+                    "coffee_rinsing": "Coffee rinsing",
+                    "system_filling": "System filling",
+                    "system_emptying": "System emptying",
+                    "please_wait": "Please wait",
+                    "press_rinse": "Press rinse",
+                    "ventilation_closed": "Ventilation closed",
+                    "no_beans": "No beans",
+                    "not_enough_powder": "Not enough powder",
+                    "periphery_alert": "Periphery alert",
+                    "powder_product": "Powder product",
+                    "enjoy_product": "Enjoy product",
+                    "coffee_ready": "Coffee ready",
+                    "energy_safe": "Energy safe",
+                    "welcome": "Welcome",
+                    "goodbye": "Goodbye",
+                    "active_rf_filter": "Active RF filter",
+                    "remote_screen": "Remote screen",
+                    "unknown_status": "Unknown status"
+                }
             },
             "machine_type": {
                 "name": "Machine type"

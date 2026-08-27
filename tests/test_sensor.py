@@ -7,7 +7,7 @@ from dataclasses import replace
 from unittest.mock import MagicMock
 
 from custom_components.jura import sensor as jura_sensor
-from custom_components.jura.const import COUNTER_KEYS, DOMAIN, PERCENT_KEYS, STATE_IDLE
+from custom_components.jura.const import COUNTER_KEYS, DOMAIN, PERCENT_KEYS, STATE_IDLE, STATE_UNKNOWN, STATUS_STATES
 from custom_components.jura.sensor import (
     BrewCounterSensor,
     BrewTotalSensor,
@@ -43,6 +43,14 @@ def test_state_sensor_priority_picks_first_match(fake_config_entry, sample_snaps
 def test_state_sensor_idle_when_no_alerts(empty_snapshot, fake_config_entry):
     sensor = StateSensor(_make_coordinator(empty_snapshot), fake_config_entry)
     assert sensor.native_value == STATE_IDLE
+
+
+def test_state_sensor_unknown_future_alert_has_stable_fallback(fake_config_entry, sample_snapshot):
+    future = replace(sample_snapshot, active_alerts=("future_library_status",))
+    sensor = StateSensor(_make_coordinator(future), fake_config_entry)
+
+    assert sensor.native_value == STATE_UNKNOWN
+    assert sensor.extra_state_attributes["active_alerts"] == ["future_library_status"]
 
 
 def test_state_sensor_none_without_data(fake_config_entry):
@@ -99,6 +107,8 @@ def test_state_sensor_uses_status_translation_key(fake_config_entry, sample_snap
     # carries has_entity_name + the translation key.
     assert s._attr_has_entity_name is True
     assert s._attr_translation_key == "status"
+    assert s.device_class == "enum"
+    assert s._attr_options == list(STATUS_STATES)
     assert s.entity_category is None
 
 

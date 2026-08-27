@@ -76,6 +76,7 @@ STATE_PRIORITY: tuple[str, ...] = (
     "goodbye",
 )
 STATE_IDLE = "idle"
+STATE_UNKNOWN = "unknown_status"
 
 # Alerts that we expose as dedicated binary_sensor entities. The value is the
 # Home Assistant device_class for the entity. Problem-class alerts stay in
@@ -127,6 +128,12 @@ ALERT_BINARY_SENSORS: dict[str, str | None] = {
     "active_rf_filter": None,
     "remote_screen": None,
 }
+
+# Every canonical value the finite status sensor can expose. Keep this tied to
+# the alert registry so adding a decoded status bit also requires adding its UI
+# translation. Unknown future library values collapse to STATE_UNKNOWN while
+# remaining visible in the snapshot's active_alerts attribute for diagnostics.
+STATUS_STATES: tuple[str, ...] = (STATE_IDLE, *ALERT_BINARY_SENSORS, STATE_UNKNOWN)
 
 # Alerts whose device class is "running" or `None` are diagnostic by nature
 # (heating up, ready, welcome) — they describe state rather than something

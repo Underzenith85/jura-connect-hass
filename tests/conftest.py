@@ -386,6 +386,7 @@ class SensorEntity:
 
 
 class SensorDeviceClass:
+    ENUM = "enum"
     MONETARY = "monetary"
 
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, callback
@@ -17,6 +17,8 @@ from .const import (
     PERCENT_KEYS,
     STATE_IDLE,
     STATE_PRIORITY,
+    STATE_UNKNOWN,
+    STATUS_STATES,
 )
 from .coordinator import JuraCoordinator
 from .entity import JuraEntity
@@ -73,13 +75,18 @@ def _derive_state(active_alerts: tuple[str, ...]) -> str:
     for name in STATE_PRIORITY:
         if name in alert_set:
             return name
-    return next(iter(active_alerts))
+    for name in active_alerts:
+        if name in STATUS_STATES:
+            return name
+    return STATE_UNKNOWN
 
 
 class StateSensor(JuraEntity, SensorEntity):
     """Overall machine state derived from the active alert bits."""
 
     _attr_translation_key = "status"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = list(STATUS_STATES)
     _attr_icon = "mdi:coffee-maker"
 
     def __init__(self, coordinator: JuraCoordinator, config_entry: ConfigEntry) -> None:
