@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from custom_components.jura.const import ALERT_BINARY_SENSORS, COUNTER_KEYS, PERCENT_KEYS
+from custom_components.jura.const import ALERT_BINARY_SENSORS, COUNTER_KEYS, PERCENT_KEYS, STATUS_STATES
 from custom_components.jura.brew import PRESELECTION_TRANSLATION_KEYS
 from custom_components.jura.select import BREW_PRODUCT_TRANSLATION_KEYS, FACTORY_DEFAULT
 
@@ -142,3 +142,18 @@ def test_brew_preselection_states_cover_known_values_and_default(catalog_name):
 def test_z10_americano_english_friendly_name(strings):
     states = strings["entity"]["select"]["brew_product"]["state"]
     assert states["cafe_barista"] == "Americano"
+
+
+@pytest.mark.parametrize("catalog_name", ["strings.json", "translations/en.json", "translations/de.json"])
+def test_status_states_cover_every_possible_enum(catalog_name):
+    states = _load(catalog_name)["entity"]["sensor"]["status"]["state"]
+    assert set(states) == set(STATUS_STATES)
+
+
+@pytest.mark.parametrize("catalog_name", ["strings.json", "translations/en.json", "translations/de.json"])
+def test_status_labels_match_alert_entity_terminology(catalog_name):
+    catalog = _load(catalog_name)["entity"]
+    status_states = catalog["sensor"]["status"]["state"]
+    alert_names = catalog["binary_sensor"]
+    for alert in ALERT_BINARY_SENSORS:
+        assert status_states[alert] == alert_names[alert]["name"]

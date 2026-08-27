@@ -2,7 +2,50 @@
     "entity": {
         "sensor": {
             "status": {
-                "name": "Status"
+                "name": "Status",
+                "state": {
+                    "idle": "Bereit",
+                    "fill_water": "Wasser nachfüllen",
+                    "fill_system": "System füllen",
+                    "fill_powder": "Pulver nachfüllen",
+                    "empty_grounds": "Kaffeesatz leeren",
+                    "empty_tray": "Tablett leeren",
+                    "insert_tray": "Tablett einlegen",
+                    "insert_coffee_bin": "Kaffeesatzbehälter einsetzen",
+                    "outlet_missing": "Auslauf fehlt",
+                    "rear_cover_missing": "Hintere Abdeckung fehlt",
+                    "close_powder_cover": "Pulverabdeckung schließen",
+                    "remove_water_tank": "Wassertank entfernen",
+                    "error_status": "Fehlerstatus",
+                    "program_mode_status": "Programmmodusstatus",
+                    "milk_alert": "Milchwarnung",
+                    "milk_sensor_error": "Milchsensorfehler",
+                    "no_milk_sensor": "Kein Milchsensor",
+                    "milk_sensor_no_signal": "Milchsensor kein Signal",
+                    "filter_alert": "Filterwarnung",
+                    "descale_alert": "Entkalkungswarnung",
+                    "cleaning_alert": "Reinigungswarnung",
+                    "cappu_rinse_alert": "Cappuccino-Spülwarnung",
+                    "heating_up": "Wird aufgeheizt",
+                    "coffee_rinsing": "Kaffee wird gespült",
+                    "system_filling": "System wird gefüllt",
+                    "system_emptying": "System wird geleert",
+                    "please_wait": "Bitte warten",
+                    "press_rinse": "Spültaste drücken",
+                    "ventilation_closed": "Belüftung geschlossen",
+                    "no_beans": "Keine Kaffeebohnen",
+                    "not_enough_powder": "Nicht genug Pulver",
+                    "periphery_alert": "Peripherie-Warnung",
+                    "powder_product": "Pulverprodukt",
+                    "enjoy_product": "Getränk genießen",
+                    "coffee_ready": "Kaffee bereit",
+                    "energy_safe": "Energiesparmodus",
+                    "welcome": "Willkommen",
+                    "goodbye": "Auf Wiedersehen",
+                    "active_rf_filter": "Aktiver HF-Filter",
+                    "remote_screen": "Fernbedienung",
+                    "unknown_status": "Unbekannter Status"
+                }
             },
             "machine_type": {
                 "name": "Maschinentyp"
