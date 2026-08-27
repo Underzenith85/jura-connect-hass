@@ -20,7 +20,7 @@ from .const import (
     STATE_UNKNOWN,
     STATUS_STATES,
 )
-from .coordinator import JuraCoordinator
+from .coordinator import HANDSHAKE_STATE_OFFLINE, JuraCoordinator
 from .entity import JuraEntity
 from .serializers import percent_value, serialize_snapshot
 
@@ -97,6 +97,8 @@ class StateSensor(JuraEntity, SensorEntity):
     def native_value(self) -> str | None:
         snapshot = _snapshot(self.coordinator)
         if snapshot is None:
+            return None
+        if not self.coordinator.last_update_success or snapshot.handshake_state == HANDSHAKE_STATE_OFFLINE:
             return None
         return _derive_state(snapshot.active_alerts)
 

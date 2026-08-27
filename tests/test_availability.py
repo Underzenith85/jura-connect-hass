@@ -37,8 +37,9 @@ def test_sensors_stay_available_when_poll_fails(sample_snapshot, fake_config_ent
     assert counter.available is True
     assert percent.available is True
 
-    # And critically — they still return the last-known value.
-    assert state.native_value == "heating_up"
+    # The overall status is live machine state, so stale alerts must not remain
+    # actionable. Historical counters and percentages retain their values.
+    assert state.native_value is None
     assert counter.native_value == 21
     assert percent.native_value == 80
 
