@@ -45,7 +45,6 @@ from custom_components.jura.const import (  # noqa: E402
 )
 from custom_components.jura.coordinator import JuraCoordinator  # noqa: E402
 from custom_components.jura.select import (  # noqa: E402
-    BREW_PRODUCT_TRANSLATION_KEYS,
     BrewMilkFoamSelect,
     BrewMilkSelect,
     BrewProductSelect,
@@ -124,22 +123,19 @@ def test_coordinator_seeds_first_product_and_default_params():
 def test_product_select_options_and_current(fake_config_entry):
     coordinator = _coordinator()
     entity = BrewProductSelect(coordinator, _entry())
-    expected = [
-        name if name in BREW_PRODUCT_TRANSLATION_KEYS else name.replace("_", " ").title() for name in _PRODUCT_NAMES
-    ]
-    assert entity.options == expected
+    assert entity.options == _PRODUCT_NAMES
     assert entity.current_option == "espresso"
     assert entity.entity_category == "config"
     assert entity.unique_id.endswith("brew_product")
     assert entity._attr_translation_key == "brew_product"
 
 
-def test_untranslated_profile_product_has_friendly_fallback():
+def test_product_select_keeps_canonical_values_for_translation():
     coordinator = _coordinator()
     entity = BrewProductSelect(coordinator, _entry())
 
-    assert "Sweet Latte" in entity.options
-    assert "sweet_latte" not in entity.options
+    assert "sweet_latte" in entity.options
+    assert "Sweet Latte" not in entity.options
 
 
 def test_z10_americano_keeps_canonical_value_for_translation():

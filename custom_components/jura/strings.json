@@ -272,36 +272,105 @@
             "brew_product": {
                 "name": "Brew product",
                 "state": {
-                    "espresso": "Espresso",
-                    "coffee": "Coffee",
-                    "cappuccino": "Cappuccino",
-                    "milkcoffee": "Milk coffee",
-                    "espresso_macchiato": "Espresso macchiato",
-                    "latte_macchiato": "Latte macchiato",
-                    "milk_foam": "Milk foam",
-                    "milk": "Milk",
-                    "pot": "Pot of coffee",
-                    "hotwater_portion": "Hot water",
-                    "2_espressi": "Two espressos",
-                    "2_coffee": "Two coffees",
-                    "cafe_barista": "Americano",
-                    "barista_lungo": "Lungo Barista",
-                    "cortado": "Cortado",
-                    "hotwater_portion_green_tea": "Hot water for green tea",
-                    "flat_white": "Flat white",
-                    "espresso_doppio": "Espresso doppio",
-                    "2_cafe_barista": "Two Americanos",
+                    "1_coffee_special": "Coffee specialty",
+                    "1_cortado": "Cortado",
+                    "1_flat_white": "Flat white",
+                    "1_hotwater_portion_green_tea": "Hot water for green tea",
+                    "2_americano": "Two Americanos",
                     "2_barista_lungo": "Two Lungo Baristas",
-                    "powderproduct": "Ground coffee"
+                    "2_cafe_barista": "Two Americanos",
+                    "2_cappuccini": "Two cappuccinos",
+                    "2_cappuccino": "Two cappuccinos",
+                    "2_coffee": "Two coffees",
+                    "2_coffee_special": "Two coffee specialties",
+                    "2_coffee_speed_1": "Two coffees (speed 1)",
+                    "2_coffee_speed_2": "Two coffees (speed 2)",
+                    "2_cortado": "Two cortados",
+                    "2_espressi": "Two espressos",
+                    "2_espresso": "Two espressos",
+                    "2_espresso_macchiati": "Two espresso macchiatos",
+                    "2_espresso_macchiato": "Two espresso macchiatos",
+                    "2_flat_white": "Two flat whites",
+                    "2_latte_macchiati": "Two latte macchiatos",
+                    "2_latte_macchiato": "Two latte macchiatos",
+                    "2_long_black": "Two long blacks",
+                    "2_lungo": "Two lungos",
+                    "2_milk": "Two milks",
+                    "2_milk_foam": "Two milk foams",
+                    "2_milk_portion": "Two milk portions",
+                    "2_milkcoffee": "Two milk coffees",
+                    "2_portion_milk": "Two milk portions",
+                    "2_ristretti": "Two ristrettos",
+                    "2_ristretti_only_joe": "Two ristrettos (J.O.E. only)",
+                    "2x_americano": "Two Americanos",
+                    "2x_cappuccino": "Two cappuccinos",
+                    "2x_coffee": "Two coffees",
+                    "2x_cortado": "Two cortados",
+                    "2x_espresso": "Two espressos",
+                    "2x_flat_white": "Two flat whites",
+                    "2x_latte_macchiato": "Two latte macchiatos",
+                    "2x_lungo": "Two lungos",
+                    "2x_milk": "Two milks",
+                    "2x_milk_foam": "Two milk foams",
+                    "2x_milkcoffee": "Two milk coffees",
+                    "americano": "Americano",
+                    "barista_lungo": "Lungo Barista",
+                    "barista_lungo_joe_only": "Lungo Barista (J.O.E. only)",
+                    "barista_lungo_only_joe": "Lungo Barista (J.O.E. only)",
+                    "cafe_barista": "Americano",
+                    "cafe_barista_americano": "Americano",
+                    "cafe_barista_joe_only": "Americano (J.O.E. only)",
+                    "cafe_barista_only_joe": "Americano (J.O.E. only)",
+                    "cappuccino": "Cappuccino",
+                    "cappuccino_big": "Large cappuccino",
+                    "chocolate_milkfoam": "Chocolate milk foam",
+                    "coffee": "Coffee",
+                    "coffee_big": "Large coffee",
+                    "coffee_special": "Coffee specialty",
+                    "coffee_speed_1": "Coffee (speed 1)",
+                    "coffee_speed_2": "Coffee (speed 2)",
+                    "cortado": "Cortado",
+                    "espresso": "Espresso",
+                    "espresso_big": "Large espresso",
+                    "espresso_doppio": "Espresso doppio",
+                    "espresso_doppio_only_joe": "Espresso doppio (J.O.E. only)",
+                    "espresso_macchiato": "Espresso macchiato",
+                    "flat_white": "Flat white",
+                    "hotwater_portion": "Hot water",
+                    "hotwater_portion_big": "Large hot water",
+                    "hotwater_portion_black_tea": "Hot water for black tea",
+                    "hotwater_portion_green_tea": "Hot water for green tea",
+                    "hotwater_portion_normal": "Hot water",
+                    "latte_macchiato": "Latte macchiato",
+                    "latte_macchiato_big": "Large latte macchiato",
+                    "long_black": "Long black",
+                    "lungo": "Lungo",
+                    "milk": "Milk",
+                    "milk_big": "Large milk",
+                    "milk_foam": "Milk foam",
+                    "milk_portion": "Milk portion",
+                    "milkcoffee": "Milk coffee",
+                    "milkcoffee_big": "Large milk coffee",
+                    "mocaccino": "Mocaccino",
+                    "pot": "Pot of coffee",
+                    "pot_2_speed": "Pot of coffee (speed 2)",
+                    "powderproduct": "Ground coffee",
+                    "ristretto": "Ristretto",
+                    "ristretto_only_joe": "Ristretto (J.O.E. only)",
+                    "sweet_latte": "Sweet latte"
                 }
             },
             "brew_strength": {
                 "name": "Brew strength",
-                "state": { "factory_default": "Factory default" }
+                "state": {
+                    "factory_default": "Factory default"
+                }
             },
             "brew_water": {
                 "name": "Brew water",
-                "state": { "factory_default": "Factory default" }
+                "state": {
+                    "factory_default": "Factory default"
+                }
             },
             "brew_temperature": {
                 "name": "Brew temperature",
@@ -314,11 +383,15 @@
             },
             "brew_milk": {
                 "name": "Brew milk",
-                "state": { "factory_default": "Factory default" }
+                "state": {
+                    "factory_default": "Factory default"
+                }
             },
             "brew_milk_foam": {
                 "name": "Brew milk foam",
-                "state": { "factory_default": "Factory default" }
+                "state": {
+                    "factory_default": "Factory default"
+                }
             },
             "brew_preselection": {
                 "name": "Brew preselection",

@@ -213,36 +213,105 @@
             "brew_product": {
                 "name": "Brühprodukt",
                 "state": {
-                    "espresso": "Espresso",
-                    "coffee": "Kaffee",
-                    "cappuccino": "Cappuccino",
-                    "milkcoffee": "Milchkaffee",
-                    "espresso_macchiato": "Espresso macchiato",
-                    "latte_macchiato": "Latte macchiato",
-                    "milk_foam": "Milchschaum",
-                    "milk": "Milch",
-                    "pot": "Kännchen Kaffee",
-                    "hotwater_portion": "Heißwasser",
-                    "2_espressi": "Zwei Espressi",
-                    "2_coffee": "Zwei Kaffee",
-                    "cafe_barista": "Americano",
-                    "barista_lungo": "Lungo Barista",
-                    "cortado": "Cortado",
-                    "hotwater_portion_green_tea": "Heißwasser für Grüntee",
-                    "flat_white": "Flat White",
-                    "espresso_doppio": "Espresso doppio",
-                    "2_cafe_barista": "Zwei Americanos",
+                    "1_coffee_special": "Kaffeespezialität",
+                    "1_cortado": "Cortado",
+                    "1_flat_white": "Flat White",
+                    "1_hotwater_portion_green_tea": "Heißwasser für Grüntee",
+                    "2_americano": "Zwei Americanos",
                     "2_barista_lungo": "Zwei Lungo Barista",
-                    "powderproduct": "Gemahlener Kaffee"
+                    "2_cafe_barista": "Zwei Americanos",
+                    "2_cappuccini": "Zwei Cappuccinos",
+                    "2_cappuccino": "Zwei Cappuccinos",
+                    "2_coffee": "Zwei Kaffee",
+                    "2_coffee_special": "Zwei Kaffeespezialitäten",
+                    "2_coffee_speed_1": "Zwei Kaffee (Geschwindigkeit 1)",
+                    "2_coffee_speed_2": "Zwei Kaffee (Geschwindigkeit 2)",
+                    "2_cortado": "Zwei Cortados",
+                    "2_espressi": "Zwei Espressi",
+                    "2_espresso": "Zwei Espressi",
+                    "2_espresso_macchiati": "Zwei Espresso macchiato",
+                    "2_espresso_macchiato": "Zwei Espresso macchiato",
+                    "2_flat_white": "Zwei Flat White",
+                    "2_latte_macchiati": "Zwei Latte macchiato",
+                    "2_latte_macchiato": "Zwei Latte macchiato",
+                    "2_long_black": "Zwei Long Black",
+                    "2_lungo": "Zwei Lungo",
+                    "2_milk": "Zwei Milchportionen",
+                    "2_milk_foam": "Zwei Milchschaumportionen",
+                    "2_milk_portion": "Zwei Milchportionen",
+                    "2_milkcoffee": "Zwei Milchkaffee",
+                    "2_portion_milk": "Zwei Milchportionen",
+                    "2_ristretti": "Zwei Ristretti",
+                    "2_ristretti_only_joe": "Zwei Ristretti (nur J.O.E.)",
+                    "2x_americano": "Zwei Americanos",
+                    "2x_cappuccino": "Zwei Cappuccinos",
+                    "2x_coffee": "Zwei Kaffee",
+                    "2x_cortado": "Zwei Cortados",
+                    "2x_espresso": "Zwei Espressi",
+                    "2x_flat_white": "Zwei Flat White",
+                    "2x_latte_macchiato": "Zwei Latte macchiato",
+                    "2x_lungo": "Zwei Lungo",
+                    "2x_milk": "Zwei Milchportionen",
+                    "2x_milk_foam": "Zwei Milchschaumportionen",
+                    "2x_milkcoffee": "Zwei Milchkaffee",
+                    "americano": "Americano",
+                    "barista_lungo": "Lungo Barista",
+                    "barista_lungo_joe_only": "Lungo Barista (nur J.O.E.)",
+                    "barista_lungo_only_joe": "Lungo Barista (nur J.O.E.)",
+                    "cafe_barista": "Americano",
+                    "cafe_barista_americano": "Americano",
+                    "cafe_barista_joe_only": "Americano (nur J.O.E.)",
+                    "cafe_barista_only_joe": "Americano (nur J.O.E.)",
+                    "cappuccino": "Cappuccino",
+                    "cappuccino_big": "Großer Cappuccino",
+                    "chocolate_milkfoam": "Schokoladen-Milchschaum",
+                    "coffee": "Kaffee",
+                    "coffee_big": "Großer Kaffee",
+                    "coffee_special": "Kaffeespezialität",
+                    "coffee_speed_1": "Kaffee (Geschwindigkeit 1)",
+                    "coffee_speed_2": "Kaffee (Geschwindigkeit 2)",
+                    "cortado": "Cortado",
+                    "espresso": "Espresso",
+                    "espresso_big": "Großer Espresso",
+                    "espresso_doppio": "Espresso doppio",
+                    "espresso_doppio_only_joe": "Espresso doppio (nur J.O.E.)",
+                    "espresso_macchiato": "Espresso macchiato",
+                    "flat_white": "Flat White",
+                    "hotwater_portion": "Heißwasser",
+                    "hotwater_portion_big": "Große Heißwasserportion",
+                    "hotwater_portion_black_tea": "Heißwasser für Schwarztee",
+                    "hotwater_portion_green_tea": "Heißwasser für Grüntee",
+                    "hotwater_portion_normal": "Heißwasser",
+                    "latte_macchiato": "Latte macchiato",
+                    "latte_macchiato_big": "Großer Latte macchiato",
+                    "long_black": "Long black",
+                    "lungo": "Lungo",
+                    "milk": "Milch",
+                    "milk_big": "Große Milchportion",
+                    "milk_foam": "Milchschaum",
+                    "milk_portion": "Milchportion",
+                    "milkcoffee": "Milchkaffee",
+                    "milkcoffee_big": "Großer Milchkaffee",
+                    "mocaccino": "Mocaccino",
+                    "pot": "Kännchen Kaffee",
+                    "pot_2_speed": "Kännchen Kaffee (Geschwindigkeit 2)",
+                    "powderproduct": "Gemahlener Kaffee",
+                    "ristretto": "Ristretto",
+                    "ristretto_only_joe": "Ristretto (nur J.O.E.)",
+                    "sweet_latte": "Sweet Latte"
                 }
             },
             "brew_strength": {
                 "name": "Brühstärke",
-                "state": { "factory_default": "Werkseinstellung" }
+                "state": {
+                    "factory_default": "Werkseinstellung"
+                }
             },
             "brew_water": {
                 "name": "Brühwassermenge",
-                "state": { "factory_default": "Werkseinstellung" }
+                "state": {
+                    "factory_default": "Werkseinstellung"
+                }
             },
             "brew_temperature": {
                 "name": "Brühtemperatur",
@@ -255,11 +324,15 @@
             },
             "brew_milk": {
                 "name": "Brühmilchmenge",
-                "state": { "factory_default": "Werkseinstellung" }
+                "state": {
+                    "factory_default": "Werkseinstellung"
+                }
             },
             "brew_milk_foam": {
                 "name": "Brühmilchschaummenge",
-                "state": { "factory_default": "Werkseinstellung" }
+                "state": {
+                    "factory_default": "Werkseinstellung"
+                }
             },
             "brew_preselection": {
                 "name": "Brühvorwahl",
