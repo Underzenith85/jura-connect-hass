@@ -20,7 +20,11 @@ from jura_connect import known_machine_names, load_profile  # noqa: E402
 
 from custom_components.jura.brew import PRESELECTION_TRANSLATION_KEYS  # noqa: E402
 from custom_components.jura.const import ALERT_BINARY_SENSORS, COUNTER_KEYS, PERCENT_KEYS, STATUS_STATES  # noqa: E402
-from custom_components.jura.select import BREW_PRODUCT_TRANSLATION_KEYS, FACTORY_DEFAULT  # noqa: E402
+from custom_components.jura.localization import (  # noqa: E402
+    BREW_PRODUCT_TRANSLATION_KEYS,
+    SETTING_TRANSLATION_KEYS,
+)
+from custom_components.jura.select import FACTORY_DEFAULT  # noqa: E402
 
 _COMPONENT = Path(__file__).resolve().parent.parent / "custom_components" / "jura"
 
@@ -50,12 +54,14 @@ def _expected_keys() -> dict[str, set[str]]:
     sensor = {"status", "machine_type", "brew_total", "brew_counter"}
     sensor |= {f"counter_{k}" for k in COUNTER_KEYS}
     sensor |= {f"percent_{k}" for k in PERCENT_KEYS}
+    sensor |= {f"brew_counter_{k}" for k in BREW_PRODUCT_TRANSLATION_KEYS}
     binary_sensor = {"connectivity", *ALERT_BINARY_SENSORS.keys()}
     return {
         "sensor": sensor,
         "binary_sensor": binary_sensor,
         "select": {
             "setting",
+            *(f"setting_{key}" for key in SETTING_TRANSLATION_KEYS),
             "brew_product",
             "brew_strength",
             "brew_water",
@@ -64,7 +70,7 @@ def _expected_keys() -> dict[str, set[str]]:
             "brew_milk_foam",
             "brew_preselection",
         },
-        "number": {"setting"},
+        "number": {"setting", "setting_hardness"},
         "button": {"brew"},
     }
 
@@ -145,6 +151,24 @@ def test_brew_product_states_cover_known_profile_names(catalog_name):
         profile_products.update(product.name for product in profile.products)
 
     assert set(states) == profile_products == BREW_PRODUCT_TRANSLATION_KEYS
+
+
+@pytest.mark.parametrize("catalog_name", ["strings.json", "translations/en.json", "translations/de.json"])
+def test_setting_catalog_covers_every_profile_name_and_choice(catalog_name):
+    select_catalog = _load(catalog_name)["entity"]["select"]
+    profile_settings: dict[str, set[str]] = {}
+    for _machine_name, machine_code in known_machine_names():
+        try:
+            profile = load_profile(machine_code)
+        except KeyError:
+            continue
+        for setting in profile.settings:
+            profile_settings.setdefault(setting.name, set()).update(item.name for item in (setting.items or []))
+
+    assert set(profile_settings) == SETTING_TRANSLATION_KEYS
+    for name, choices in profile_settings.items():
+        if choices:
+            assert set(select_catalog[f"setting_{name}"]["state"]) == choices
 
 
 @pytest.mark.parametrize("catalog_name", ["strings.json", "translations/en.json", "translations/de.json"])
