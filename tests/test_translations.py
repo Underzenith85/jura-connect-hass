@@ -14,9 +14,13 @@ from pathlib import Path
 
 import pytest
 
-from custom_components.jura.const import ALERT_BINARY_SENSORS, COUNTER_KEYS, PERCENT_KEYS, STATUS_STATES
-from custom_components.jura.brew import PRESELECTION_TRANSLATION_KEYS
-from custom_components.jura.select import BREW_PRODUCT_TRANSLATION_KEYS, FACTORY_DEFAULT
+jura_connect = pytest.importorskip("jura_connect")
+
+from jura_connect import known_machine_names, load_profile  # noqa: E402
+
+from custom_components.jura.brew import PRESELECTION_TRANSLATION_KEYS  # noqa: E402
+from custom_components.jura.const import ALERT_BINARY_SENSORS, COUNTER_KEYS, PERCENT_KEYS, STATUS_STATES  # noqa: E402
+from custom_components.jura.select import BREW_PRODUCT_TRANSLATION_KEYS, FACTORY_DEFAULT  # noqa: E402
 
 _COMPONENT = Path(__file__).resolve().parent.parent / "custom_components" / "jura"
 
@@ -130,7 +134,17 @@ def test_strings_and_en_mirror_match(strings, en):
 @pytest.mark.parametrize("catalog_name", ["strings.json", "translations/en.json", "translations/de.json"])
 def test_brew_product_states_cover_known_profile_names(catalog_name):
     states = _load(catalog_name)["entity"]["select"]["brew_product"]["state"]
-    assert set(states) == BREW_PRODUCT_TRANSLATION_KEYS
+    profile_products = set()
+    for _machine_name, machine_code in known_machine_names():
+        try:
+            profile = load_profile(machine_code)
+        except KeyError:
+            # jura_connect exposes a few aliases whose profile XML is not
+            # packaged; they cannot surface entities in this integration.
+            continue
+        profile_products.update(product.name for product in profile.products)
+
+    assert set(states) == profile_products == BREW_PRODUCT_TRANSLATION_KEYS
 
 
 @pytest.mark.parametrize("catalog_name", ["strings.json", "translations/en.json", "translations/de.json"])

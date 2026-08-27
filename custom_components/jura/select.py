@@ -53,36 +53,96 @@ FACTORY_DEFAULT = "factory_default"
 
 # Product identifiers covered by entity.select.brew_product.state. Keep the
 # wire/profile identifier as the select value; Home Assistant renders the
-# localized label. A profile added by a newer jura_connect still gets a
-# readable fallback until its translation lands here.
+# localized label. This catalog is intentionally checked against every profile
+# bundled with jura_connect so new identifiers cannot silently bypass i18n.
 BREW_PRODUCT_TRANSLATION_KEYS = {
-    "espresso",
-    "coffee",
-    "cappuccino",
-    "milkcoffee",
-    "espresso_macchiato",
-    "latte_macchiato",
-    "milk_foam",
-    "milk",
-    "pot",
-    "hotwater_portion",
-    "2_espressi",
+    "1_coffee_special",
+    "1_cortado",
+    "1_flat_white",
+    "1_hotwater_portion_green_tea",
+    "2_americano",
+    "2_barista_lungo",
+    "2_cafe_barista",
+    "2_cappuccini",
+    "2_cappuccino",
     "2_coffee",
-    "cafe_barista",
+    "2_coffee_special",
+    "2_coffee_speed_1",
+    "2_coffee_speed_2",
+    "2_cortado",
+    "2_espressi",
+    "2_espresso",
+    "2_espresso_macchiati",
+    "2_espresso_macchiato",
+    "2_flat_white",
+    "2_latte_macchiati",
+    "2_latte_macchiato",
+    "2_long_black",
+    "2_lungo",
+    "2_milk",
+    "2_milk_foam",
+    "2_milk_portion",
+    "2_milkcoffee",
+    "2_portion_milk",
+    "2_ristretti",
+    "2_ristretti_only_joe",
+    "2x_americano",
+    "2x_cappuccino",
+    "2x_coffee",
+    "2x_cortado",
+    "2x_espresso",
+    "2x_flat_white",
+    "2x_latte_macchiato",
+    "2x_lungo",
+    "2x_milk",
+    "2x_milk_foam",
+    "2x_milkcoffee",
+    "americano",
     "barista_lungo",
+    "barista_lungo_joe_only",
+    "barista_lungo_only_joe",
+    "cafe_barista",
+    "cafe_barista_americano",
+    "cafe_barista_joe_only",
+    "cafe_barista_only_joe",
+    "cappuccino",
+    "cappuccino_big",
+    "chocolate_milkfoam",
+    "coffee",
+    "coffee_big",
+    "coffee_special",
+    "coffee_speed_1",
+    "coffee_speed_2",
     "cortado",
-    "hotwater_portion_green_tea",
+    "espresso",
+    "espresso_big",
     "flat_white",
     "espresso_doppio",
-    "2_cafe_barista",
-    "2_barista_lungo",
+    "espresso_doppio_only_joe",
+    "espresso_macchiato",
+    "hotwater_portion",
+    "hotwater_portion_big",
+    "hotwater_portion_black_tea",
+    "hotwater_portion_green_tea",
+    "hotwater_portion_normal",
+    "latte_macchiato",
+    "latte_macchiato_big",
+    "long_black",
+    "lungo",
+    "milk",
+    "milk_big",
+    "milk_foam",
+    "milk_portion",
+    "milkcoffee",
+    "milkcoffee_big",
+    "mocaccino",
+    "pot",
+    "pot_2_speed",
     "powderproduct",
+    "ristretto",
+    "ristretto_only_joe",
+    "sweet_latte",
 }
-
-
-def _product_option(name: str) -> str:
-    """Return a translatable stable value or a friendly future fallback."""
-    return name if name in BREW_PRODUCT_TRANSLATION_KEYS else name.replace("_", " ").title()
 
 
 async def async_setup_entry(
@@ -218,7 +278,7 @@ class BrewProductSelect(JuraEntity, SelectEntity):
         profile = self.coordinator.brew_profile
         if profile is None:
             return []
-        return [_product_option(product.name) for product in profile.products]
+        return [product.name for product in profile.products]
 
     @property
     def available(self) -> bool:
@@ -227,14 +287,14 @@ class BrewProductSelect(JuraEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         product = self.coordinator.selected_product()
-        return _product_option(product.name) if product is not None else None
+        return product.name if product is not None else None
 
     async def async_select_option(self, option: str) -> None:
         profile = self.coordinator.brew_profile
         if profile is None:
             return
         for product in profile.products:
-            if _product_option(product.name) == option:
+            if product.name == option:
                 # Make this the current product and load its saved prefs into
                 # the staged selection (keyed by the 2-hex Code string).
                 self.coordinator.select_brew_product(f"{product.code:02X}")
